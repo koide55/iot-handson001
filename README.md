@@ -22,6 +22,8 @@ This directory contains Markdown-first lecture materials rebuilt from the origin
 
 ## Files
 
+- [slides/README.md](slides/README.md)
+- [slides/README_en.md](slides/README_en.md)
 - [slides/lecture01_iot_security_pico2w.md](slides/lecture01_iot_security_pico2w.md)
 - [slides/lecture02_assembly_handson_restructured.md](slides/lecture02_assembly_handson_restructured.md)
 - [slides/lecture02a_cortex_m33_assembly_primer.md](slides/lecture02a_cortex_m33_assembly_primer.md)
