@@ -394,6 +394,54 @@ Pico 系では ADC 入力として使えるピンがあります。代表的に�
 
 このとき、**LED の足の長い方を `GND` 側、短い方を `A0` 側** に接続してください。
 
+#### Pico 2 W 上で今回使う実ピン
+
+| 信号名 | 物理ピン番号 | 位置 |
+|---|---:|---|
+| `A0` = `GP26` | 31 | 右側の下から 10 番目 |
+| `GND` | 28 または 33 | 右側の下から 13 番目、または上から 8 番目 |
+| `3V3(OUT)` | 36 | 右側の上から 5 番目 |
+
+より正確な全体配置を確認したい場合は、Raspberry Pi 公式データシートも参照してください。
+
+- 公式データシート: <https://pip-assets.raspberrypi.com/categories/1088-raspberry-pi-pico-2-w/documents/RP-008304-DS-2-pico-2-w-datasheet.pdf?disposition=inline>
+
+特に **6ページのレイアウト図** を見ながら、今回の `GP26(A0)`、`GND`、`3V3(OUT)` の位置を照らし合わせてください。
+
+配線位置のイメージは次の通りです。
+
+```text
+右側上部
+36  3V3(OUT)   ← 高抵抗へ
+35  ADC_VREF
+34  GP28
+33  GND        ← LED の長い足をつなげてもよい
+32  GP27
+31  GP26/A0    ← LED の短い足と高抵抗の接続点
+30  RUN
+29  GP22
+28  GND        ← LED の長い足をつなげてもよい
+```
+
+```mermaid
+flowchart LR
+    subgraph P["Raspberry Pi Pico 2 W"]
+        P36["Pin 36: 3V3(OUT)"]
+        P31["Pin 31: GP26 / A0"]
+        P28["Pin 28 or 33: GND"]
+    end
+
+    R["10MΩ"]
+    LED["LED<br/>short leg = A0<br/>long leg = GND"]
+
+    P36 --> R
+    R --> P31
+    P31 --> LED
+    LED --> P28
+```
+
+この図は授業用の簡略図です。`3V3(OUT)` から高抵抗を通して `A0` を引き上げ、LED を受光素子として `A0` と `GND` の間に接続する構成だと理解してください。
+
 使う LED は、L チカで使ったものとは別にしても構いません。周囲を手で覆ったときと、スマートフォンのライトなどを近づけたときで値が変わるかを見ます。
 
 ### 8.4 回路の考え方
