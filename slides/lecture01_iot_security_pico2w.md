@@ -21,6 +21,20 @@
 - Arpspoof の演習
 - 8 ビットマイコン / アセンブラ演習
 
+### 受講環境について
+
+この演習は、`Windows` でも `macOS` でも受講できます。ただし、社会人向け研修では会社貸与 PC の制約で途中で止まりやすいため、次の条件を満たしていることを事前に確認してください。
+
+- 利用者権限または管理者権限でソフトウェアをインストールできること
+- USB インターフェースを利用できること
+- 外部ネットワークへの接続に制限がないこと
+
+特に次の操作ができないと演習継続が難しくなります。
+
+- Arduino IDE や追加ライブラリのインストール
+- Pico 2 W の USB 接続とシリアルポート利用
+- ライブラリ取得や Ambient への接続
+
 ---
 
 ## 1. この講義でやること
@@ -75,13 +89,41 @@ Windows ではストア版よりも通常版の利用を勧めます。Pico 系�
 
 ### 3.2 Pico 系ボード定義の追加
 
-Arduino IDE の `File -> Preferences` を開き、`Additional Boards Manager URLs` に次の URL を追加します。
+Windows では Arduino IDE の `File -> Preferences` から設定を開きます。  
+Mac では `Arduino IDE -> Settings` から設定を開きます。
+
+`Additional Boards Manager URLs` は複数行を記入できます。今回使う URL は **一番最初の行** に入れてください。
 
 ```text
 https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
 ```
 
 その後、`Tools -> Board -> Boards Manager` を開き、`pico` で検索し、`Arduino-Pico` をインストールします。
+
+検索結果に `Arduino-Pico` という文字列がそのまま出ない場合があります。そのときは次の語でも検索してください。
+
+- `RP2040`
+- `RP2350`
+- `Earle Philhower`
+- `Raspberry Pi Pico`
+
+現行の Arduino IDE では、次のような名前で表示されることがあります。
+
+- `Raspberry Pi Pico/RP2040/RP2350 by Earle F. Philhower, III`
+
+見つかったら、その項目の `Install` または `Add` を選んでください。
+
+それでも出てこない場合は、次を順に確認してください。
+
+1. `Additional Boards Manager URLs` の先頭行に  
+   `https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json`  
+   が正しく入っているか
+2. URL の前後に余計な空白や全角文字が入っていないか
+3. 設定を保存したあとに Boards Manager をいったん閉じて開き直したか
+4. Arduino IDE を再起動したか
+5. GitHub へのアクセス制限やプロキシ制限がないか
+
+特に企業ネットワークでは、GitHub へのアクセス制限が原因でボード一覧が取得できないことがあります。
 
 ### 3.3 ボードの選択
 
