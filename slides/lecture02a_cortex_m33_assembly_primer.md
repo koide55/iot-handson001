@@ -2,7 +2,7 @@
 
 ## この資料の役割
 
-この資料は、[第2回 Cortex-M33 アセンブラハンズオン](/Users/koide/Documents/Playground/iot-handson/slides/lecture02_assembly_handson_restructured.md) の前に読むための、**やさしい予習資料** です。
+この資料は、[第2回 Cortex-M33 アセンブラハンズオン](lecture02_assembly_handson_restructured.md) の前に読むための、**やさしい予習資料** です。
 
 受講者が穴埋め演習で困りやすいのは、
 
@@ -18,7 +18,7 @@
 
 ## 1. 今回覚える命令の一覧
 
-穴埋め版 [led_asm.S](/Users/koide/Documents/Playground/iot-handson/projects/pico2w-cortexm33-asm-worksheet/led_asm.S) で扱う命令は次の通りです。
+穴埋め版 [led_asm.S](../projects/pico2w-cortexm33-asm-worksheet/led_asm.S) で扱う命令は次の通りです。
 
 - `ldr`
 - `str`
@@ -470,9 +470,9 @@ bx lr
 
 ## 20. 次に読む資料
 
-この資料を読んだら、次は [第2回 Cortex-M33 アセンブラハンズオン](/Users/koide/Documents/Playground/iot-handson/slides/lecture02_assembly_handson_restructured.md) に進んでください。
+この資料を読んだら、次は [第2回 Cortex-M33 アセンブラハンズオン](lecture02_assembly_handson_restructured.md) に進んでください。
 
 実際に手を動かすファイルは次です。
 
-- [pico2w-cortexm33-asm-worksheet.ino](/Users/koide/Documents/Playground/iot-handson/projects/pico2w-cortexm33-asm-worksheet/pico2w-cortexm33-asm-worksheet.ino)
-- [led_asm.S](/Users/koide/Documents/Playground/iot-handson/projects/pico2w-cortexm33-asm-worksheet/led_asm.S)
+- [pico2w-cortexm33-asm-worksheet.ino](../projects/pico2w-cortexm33-asm-worksheet/pico2w-cortexm33-asm-worksheet.ino)
+- [led_asm.S](../projects/pico2w-cortexm33-asm-worksheet/led_asm.S)

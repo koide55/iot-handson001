@@ -30,7 +30,7 @@
 
 この回に入る前に、次の資料を先に読んでください。
 
-- [第2.5回 Cortex-M33 アセンブラ超入門](/Users/koide/Documents/Playground/iot-handson/slides/lecture02a_cortex_m33_assembly_primer.md)
+- [第2.5回 Cortex-M33 アセンブラ超入門](lecture02a_cortex_m33_assembly_primer.md)
 
 特に、`ldr`、`str`、`movs`、`orrs`、`bics`、`eors`、`cbz` の意味がまだ曖昧な場合は、先にこちらを読んでから進めてください。
 
@@ -87,13 +87,13 @@
 
 ### 完成版
 
-- [pico2w-cortexm33-asm-complete/README.md](/Users/koide/Documents/Playground/iot-handson/projects/pico2w-cortexm33-asm-complete/README.md)
+- [pico2w-cortexm33-asm-complete/README.md](../projects/pico2w-cortexm33-asm-complete/README.md)
 
 講師デモや答え合わせ用です。
 
 ### 穴埋め版
 
-- [pico2w-cortexm33-asm-worksheet/README.md](/Users/koide/Documents/Playground/iot-handson/projects/pico2w-cortexm33-asm-worksheet/README.md)
+- [pico2w-cortexm33-asm-worksheet/README.md](../projects/pico2w-cortexm33-asm-worksheet/README.md)
 
 受講者は原則こちらを使います。
 
@@ -219,7 +219,7 @@ LED が点滅すれば、配線と書き込みは正常です。ここで動か�
 
 ## 9. 穴埋め版を開く
 
-次に、穴埋め版プロジェクトの [pico2w-cortexm33-asm-worksheet.ino](/Users/koide/Documents/Playground/iot-handson/projects/pico2w-cortexm33-asm-worksheet/pico2w-cortexm33-asm-worksheet.ino) と [led_asm.S](/Users/koide/Documents/Playground/iot-handson/projects/pico2w-cortexm33-asm-worksheet/led_asm.S) を開いてください。
+次に、穴埋め版プロジェクトの [pico2w-cortexm33-asm-worksheet.ino](../projects/pico2w-cortexm33-asm-worksheet/pico2w-cortexm33-asm-worksheet.ino) と [led_asm.S](../projects/pico2w-cortexm33-asm-worksheet/led_asm.S) を開いてください。
 
 `.ino` ファイルには C 側の流れが書いてあります。今回受講者が主に編集するのは `led_asm.S` です。
 
@@ -543,7 +543,7 @@ reg = (reg & ~(0x3 << 4)) | ((value & 0x3) << 4);
 
 自力で解けたら、次の完成版と比べてください。
 
-- [pico2w-cortexm33-asm-complete/led_asm.S](/Users/koide/Documents/Playground/iot-handson/projects/pico2w-cortexm33-asm-complete/led_asm.S)
+- [pico2w-cortexm33-asm-complete/led_asm.S](../projects/pico2w-cortexm33-asm-complete/led_asm.S)
 
 ただし、答えを先に見るのではなく、
 
