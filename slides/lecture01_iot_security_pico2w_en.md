@@ -297,6 +297,73 @@ Read an input pin and change the output based on its state.
 
 With `INPUT_PULLUP`, the input is `HIGH` when not pressed and `LOW` when pressed.
 
+### 7.2.1 Why a Pull-Up Is Needed
+
+A microcontroller input pin may otherwise be left in a state where it is not firmly connected to either `HIGH` or `LOW`. This is called a **floating** input.
+
+In a floating state:
+
+- the pin does not stay reliably `HIGH`
+- the pin does not stay reliably `LOW`
+- noise can make the reading unstable
+
+To avoid that, we use a pull-up so the input is normally **weakly pulled toward `HIGH`**. In this class we use the built-in pull-up by setting `INPUT_PULLUP`, instead of adding an external resistor.
+
+### 7.2.2 Why OFF Means `HIGH` and ON Means `LOW`
+
+In this wiring:
+
+- `GP14`
+- the tact switch
+- `GND`
+
+are connected together in the input path.
+
+When `INPUT_PULLUP` is enabled, the microcontroller internally pulls `GP14` weakly toward `3.3V`.
+
+That gives the following behavior.
+
+#### When the switch is not pressed
+
+- `GP14` is pulled toward `3.3V` by the internal pull-up
+- it is not yet connected to `GND`
+- the input therefore reads `HIGH`
+
+#### When the switch is pressed
+
+- `GP14` becomes connected to `GND` through the switch
+- `GP14` is pulled down toward `0V`
+- the input therefore reads `LOW`
+
+So in this circuit:
+
+- switch OFF: `HIGH`
+- switch ON: `LOW`
+
+This means the logic is **inverted** compared with the simple idea of "pressed means HIGH."
+
+```text
+Not pressed
+
+3.3V
+  |
+ [internal pull-up]
+  |
+ GP14   -> HIGH
+
+Pressed
+
+3.3V
+  |
+ [internal pull-up]
+  |
+ GP14 --- switch --- GND
+           |
+         pulled to 0V
+
+GP14   -> LOW
+```
+
 ### 7.3 About the 4 Pins of a Tact Switch
 
 A tact switch has 4 leads, but they are not four fully independent terminals.
