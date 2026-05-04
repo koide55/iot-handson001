@@ -71,12 +71,36 @@
 - `GP15` -> 抵抗 -> LED アノード
 - LED カソード -> `GND`
 
-### ボタン
+### タクトスイッチ
 
-- ボタン片側 -> `GP14`
-- ボタン反対側 -> `GND`
+- タクトスイッチ片側 -> `GP14`
+- 反対側 -> `GND`
 
 ソフトウェア側では `INPUT_PULLUP` を使います。そのため、押していないときは `HIGH`、押したときは `LOW` になります。
+
+### タクトスイッチの 4 端子について
+
+今回使うタクトスイッチは 4 端子ですが、4 本が全部独立しているわけではありません。
+
+- 押していないとき:
+  - 向かい合う 2 本ずつが、それぞれ内部でつながっている
+- 押したとき:
+  - 2 つの組どうしもつながる
+  - 結果として 4 本すべてが導通する
+
+受講者が一番間違えやすいのは、**同じ組の 2 本に `GP14` と `GND` をつないでしまうこと** です。これをやると、押していなくても常につながった状態になります。
+
+配線するときは、
+
+- 片側の組を `GP14`
+- 反対側の組を `GND`
+
+にしてください。
+
+参考になる図付きページ:
+
+- [SparkFun: Button and Switch Basics](https://learn.sparkfun.com/tutorials/button-and-switch-basics/momentary-switches)
+- [HX Switch: How to Identify Tact Switch Pinout](https://www.hx-switch.eu/how-to-identify-tact-switch-pinout/)
 
 ### Pico 2 W 上で今回使う実ピン
 
@@ -100,8 +124,8 @@
 15  GP11
 16  GP12
 17  GP13
-18  GND   ← LED の短い足 / ボタン片側ではない側
-19  GP14  ← ボタン片側
+18  GND   ← LED の短い足 / タクトスイッチ片側ではない側
+19  GP14  ← タクトスイッチ片側
 20  GP15  ← 抵抗を介して LED の長い足
 ```
 
@@ -117,7 +141,7 @@ flowchart LR
 
     R["220Ω-1kΩ"]
     LED["LED"]
-    SW["Push button"]
+    SW["Tact switch"]
 
     P20 --> R
     R --> LED
@@ -127,7 +151,7 @@ flowchart LR
     SW --> P18
 ```
 
-この図は授業用の簡略図です。重要なのは、**LED は `GP15` と `GND`、ボタンは `GP14` と `GND` の間につなぐ** ことです。
+この図は授業用の簡略図です。重要なのは、**LED は `GP15` と `GND`、タクトスイッチは `GP14` と `GND` の間につなぐ** ことです。
 
 ---
 
