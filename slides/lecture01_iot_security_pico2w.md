@@ -237,6 +237,25 @@ void loop() {
 - `GP15` -> 抵抗 -> LED アノード
 - LED カソード -> `GND`
 
+今回使う部分だけ抜き出すと、配線イメージは次のようになります。
+
+```mermaid
+flowchart LR
+    subgraph P["Raspberry Pi Pico 2 W"]
+        GP15["GP15"]
+        GND["GND"]
+    end
+
+    R["220Ω-1kΩ"]
+    LED["LED"]
+
+    GP15 --> R
+    R --> LED
+    LED --> GND
+```
+
+この図は授業用の簡略図です。Pico 2 W 全体のピン配置ではなく、**この演習で使う `GP15` と `GND` だけ** を示しています。
+
 LED には極性があります。長い足をアノード、短い足をカソードとして扱います。
 
 ### 6.3 スケッチ
