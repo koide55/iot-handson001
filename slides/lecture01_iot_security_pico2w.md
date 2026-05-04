@@ -1,0 +1,787 @@
+# IoTセキュリティ演習 1
+
+## この資料について
+
+この資料は、元の `prosecit-20251221IoT.pdf` をもとに、IoT 演習パートを Markdown に作り直したものです。今回はマイコンを `Raspberry Pi Pico 2 W with headers` 前提に置き換え、環境センサは `BMP280 + AHT20` を使う構成に整理しています。
+
+> 注記  
+> 2026年5月3日時点の Raspberry Pi の公式表記では `Raspberry Pi Pico 2 W with headers` が正式名称です。元の依頼に合わせて会話上は `Pico 2 WH` と呼ぶことがありますが、この資料内では公式に近い表記を使います。
+
+この第1版では、IoT 演習のところまでを対象にし、次の項目を含みます。
+
+- 開発環境の準備
+- マイコンの基本
+- GPIO の基本演習
+- I2C センサの利用
+- Wi-Fi 接続
+- Ambient へのデータ送信と可視化
+
+次の項目は今回の生成対象から外しています。
+
+- Arpspoof の演習
+- 8 ビットマイコン / アセンブラ演習
+
+---
+
+## 1. この講義でやること
+
+この演習では、マイコンを「小さなネットワーク接続コンピュータ」として扱います。単に LED を点滅させるだけでなく、センサ値を読み、Wi-Fi に接続し、外部サービスに送信するところまでを一通り体験します。
+
+到達目標は次のとおりです。
+
+- マイコンの基本構造を説明できる
+- Arduino IDE から Pico 2 W にスケッチを書き込める
+- デジタル入出力を使って LED とボタンを扱える
+- I2C センサから温度、湿度、気圧を取得できる
+- Wi-Fi 経由で外部サービスへデータを送信できる
+- Ambient 上で測定値を可視化できる
+
+---
+
+## 2. 必要なもの
+
+最低限、次のものを用意してください。
+
+- Raspberry Pi Pico 2 W with headers
+- USB ケーブル
+- ブレッドボード
+- ジャンパワイヤ
+- LED 1 個
+- 抵抗器 220Ω から 1kΩ を 1 本
+- タクトスイッチ 1 個
+- BMP280 モジュール
+- AHT20 モジュール
+- インターネット接続できる PC
+- 2.4GHz 帯の Wi-Fi
+
+あると便利なものです。
+
+- テスター
+- 予備のジャンパワイヤ
+- 10kΩ 抵抗
+- 可変抵抗や CdS センサ
+
+---
+
+## 3. 事前準備
+
+### 3.1 Arduino IDE のインストール
+
+Arduino IDE 2 系をインストールします。
+
+- 公式サイト: <https://www.arduino.cc/en/software>
+
+Windows ではストア版よりも通常版の利用を勧めます。Pico 系ボードの検出で問題が出ることがあります。
+
+### 3.2 Pico 系ボード定義の追加
+
+Arduino IDE の `File -> Preferences` を開き、`Additional Boards Manager URLs` に次の URL を追加します。
+
+```text
+https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
+```
+
+その後、`Tools -> Board -> Boards Manager` を開き、`pico` で検索し、`Arduino-Pico` をインストールします。
+
+### 3.3 ボードの選択
+
+ボードは `Tools -> Board` から `Raspberry Pi Pico 2 W` を選択してください。
+
+初回書き込み時は次の流れが確実です。
+
+1. Pico の `BOOTSEL` ボタンを押しながら USB 接続する
+2. `Tools -> Port -> UF2 Board` を選ぶ
+3. スケッチを書き込む
+4. 書き込み後、通常のシリアルポートを選び直す
+
+### 3.4 ライブラリの追加
+
+今回の演習では、少なくとも次のライブラリを使います。
+
+- `Adafruit BMP280 Library`
+- `Adafruit AHTX0`
+
+どちらも `Tools -> Manage Libraries` からインストールできます。依存ライブラリのインストールを聞かれたら追加してください。
+
+### 3.5 シリアルモニタ
+
+演習中の確認はシリアルモニタ中心で行います。基本は `115200 baud` にそろえます。
+
+---
+
+## 4. マイコンとは何か
+
+マイコンは、小さなコンピュータです。見た目は小さくても、計算、制御、記憶、入力、出力の要素を持っています。
+
+ふつうの PC と違うのは、入出力がキーボードや画面ではなく、ピンとして外に出ていることです。これにより、LED、スイッチ、センサ、モータなどと直接つなげます。
+
+この講義では、マイコンを次のようなものとして扱います。
+
+- センサ値を読む
+- 状態に応じて出力を変える
+- ネットワークへ接続する
+- 外部サービスにデータを送る
+
+---
+
+## 5. 最初の書き込み
+
+まずは、PC から Pico へスケッチを書き込めることを確認します。
+
+### 5.1 Hello over Serial
+
+新しいスケッチを作成して、次のコードを書き込みます。
+
+```cpp
+void setup() {
+  Serial.begin(115200);
+  delay(2000);
+  Serial.println("Pico 2 W ready");
+}
+
+void loop() {
+  Serial.println("hello");
+  delay(1000);
+}
+```
+
+シリアルモニタに 1 秒ごとに `hello` が表示されれば成功です。
+
+---
+
+## 6. GPIO の基本
+
+### 6.1 L チカ
+
+最初の演習は LED の点滅です。外付け LED を使うと GPIO の意味が分かりやすくなります。
+
+### 6.2 配線
+
+次のように接続します。
+
+- `GP15` -> 抵抗 -> LED アノード
+- LED カソード -> `GND`
+
+LED には極性があります。長い足をアノード、短い足をカソードとして扱います。
+
+### 6.3 スケッチ
+
+```cpp
+const int LED_PIN = 15;
+
+void setup() {
+  pinMode(LED_PIN, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(LED_PIN, HIGH);
+  delay(250);
+  digitalWrite(LED_PIN, LOW);
+  delay(250);
+}
+```
+
+LED が点滅すれば成功です。
+
+### 6.4 `setup()` と `loop()`
+
+Arduino スケッチでは、主に次の 2 つの関数を使います。
+
+- `setup()`
+  - 起動時に 1 回だけ実行される
+- `loop()`
+  - その後ずっと繰り返し実行される
+
+この構造は、センサの周期取得やネットワーク送信のような処理とも相性がよいです。
+
+---
+
+## 7. ボタン入力
+
+### 7.1 ねらい
+
+入力ピンの状態を読んで、出力を変える練習をします。
+
+### 7.2 配線
+
+今回は内部プルアップを使うので、回路を簡単にできます。
+
+- ボタン片側 -> `GP14`
+- ボタン反対側 -> `GND`
+- LED は前節と同じ
+
+`INPUT_PULLUP` を使うと、ボタンを押していないときは `HIGH`、押したときは `LOW` になります。
+
+### 7.3 スケッチ
+
+```cpp
+const int LED_PIN = 15;
+const int BUTTON_PIN = 14;
+
+void setup() {
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+}
+
+void loop() {
+  int pressed = digitalRead(BUTTON_PIN);
+
+  if (pressed == LOW) {
+    digitalWrite(LED_PIN, HIGH);
+  } else {
+    digitalWrite(LED_PIN, LOW);
+  }
+}
+```
+
+### 7.4 ポイント
+
+- `digitalRead(pin)` で入力を読む
+- `if` 文で条件分岐する
+- プルアップでは論理が反転する
+
+---
+
+## 8. アナログ入力
+
+### 8.1 何に使うか
+
+アナログ入力は、連続的に変わる電圧を読むために使います。たとえば次のようなセンサで使います。
+
+- 可変抵抗
+- CdS センサ
+- 一部のガスセンサや光センサ
+
+### 8.2 Pico 2 W の ADC
+
+Pico 系では ADC 入力として使えるピンがあります。代表的には次を使うと分かりやすいです。
+
+- `GP26` = `A0`
+- `GP27` = `A1`
+- `GP28` = `A2`
+
+### 8.3 最小サンプル
+
+```cpp
+const int ANALOG_PIN = A0;
+
+void setup() {
+  Serial.begin(115200);
+  delay(2000);
+}
+
+void loop() {
+  int value = analogRead(ANALOG_PIN);
+  Serial.println(value);
+  delay(500);
+}
+```
+
+この演習は任意です。今回の本命センサは I2C なので、時間がなければ次へ進んで構いません。
+
+---
+
+## 9. I2C センサ
+
+### 9.1 I2C とは
+
+I2C は、マイコンと周辺機器を少ない配線で接続するための通信方式です。基本は次の 2 本です。
+
+- `SDA`
+  - データ線
+- `SCL`
+  - クロック線
+
+加えて、電源と GND をつなぎます。
+
+### 9.2 今回使うセンサ
+
+今回の構成では、1 個のセンサで全部まかなうのではなく、2 つのセンサを組み合わせます。
+
+- `BMP280`
+  - 温度
+  - 気圧
+- `AHT20`
+  - 温度
+  - 湿度
+
+この構成にすると、気圧は BMP280、湿度は AHT20 から読み取れます。温度は両方から読めるので、比較にも使えます。
+
+### 9.3 配線
+
+I2C はバス接続なので、2 つのセンサを同じ SDA/SCL にぶら下げます。
+
+#### Pico 2 W 側の割り当て
+
+この資料では次のように固定します。
+
+- `GP4` -> `SDA`
+- `GP5` -> `SCL`
+- `3V3(OUT)` -> `VCC` / `VIN`
+- `GND` -> `GND`
+
+#### BMP280
+
+- `VCC` -> `3V3(OUT)`
+- `GND` -> `GND`
+- `SDA` -> `GP4`
+- `SCL` -> `GP5`
+- `CSB` -> 未接続
+- `SDO` -> 未接続
+
+#### AHT20
+
+- `VCC` -> `3V3(OUT)`
+- `GND` -> `GND`
+- `SDA` -> `GP4`
+- `SCL` -> `GP5`
+
+### 9.4 I2C スキャナ
+
+配線が不安なときは、まず I2C スキャナで見えるアドレスを確認します。
+
+```cpp
+#include <Wire.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(2000);
+
+  Wire.setSDA(4);
+  Wire.setSCL(5);
+  Wire.begin();
+
+  Serial.println("I2C scanner start");
+}
+
+void loop() {
+  for (byte addr = 1; addr < 127; addr++) {
+    Wire.beginTransmission(addr);
+    if (Wire.endTransmission() == 0) {
+      Serial.print("Found: 0x");
+      Serial.println(addr, HEX);
+    }
+  }
+  Serial.println("---");
+  delay(3000);
+}
+```
+
+一般的には次のようなアドレスが見えます。
+
+- BMP280: `0x76` または `0x77`
+- AHT20: `0x38`
+
+### 9.5 センサ単体の確認
+
+ライブラリ付属のサンプルで確認しても構いませんが、Pico 2 W では I2C ピンを明示したほうが分かりやすいので、ここでは最初から最小コードを示します。
+
+```cpp
+#include <Wire.h>
+#include <Adafruit_BMP280.h>
+#include <Adafruit_AHTX0.h>
+
+Adafruit_BMP280 bmp;
+Adafruit_AHTX0 aht;
+
+void setup() {
+  Serial.begin(115200);
+  delay(2000);
+
+  Wire.setSDA(4);
+  Wire.setSCL(5);
+  Wire.begin();
+
+  if (!bmp.begin(0x76)) {
+    Serial.println("BMP280 not found at 0x76");
+    while (1) {
+      delay(100);
+    }
+  }
+
+  if (!aht.begin()) {
+    Serial.println("AHT20 not found");
+    while (1) {
+      delay(100);
+    }
+  }
+
+  Serial.println("Sensors ready");
+}
+
+void loop() {
+  sensors_event_t humidity, temp;
+  aht.getEvent(&humidity, &temp);
+
+  Serial.print("BMP temp [C]: ");
+  Serial.println(bmp.readTemperature());
+
+  Serial.print("BMP pressure [hPa]: ");
+  Serial.println(bmp.readPressure() / 100.0);
+
+  Serial.print("AHT temp [C]: ");
+  Serial.println(temp.temperature);
+
+  Serial.print("AHT humidity [%]: ");
+  Serial.println(humidity.relative_humidity);
+
+  Serial.println();
+  delay(2000);
+}
+```
+
+BMP280 の I2C アドレスが `0x76` でない場合は `0x77` に変えて試してください。
+
+---
+
+## 10. Wi-Fi 接続
+
+### 10.1 Pico 2 W の Wi-Fi
+
+Pico 2 W の無線は 2.4GHz 帯を使います。演習では、まずアクセスポイントに接続できることを確認します。
+
+### 10.2 サンプル
+
+```cpp
+#include <WiFi.h>
+
+const char* SSID = "YOUR_SSID";
+const char* PASSWORD = "YOUR_PASSWORD";
+
+void setup() {
+  Serial.begin(115200);
+  delay(2000);
+
+  Serial.print("Connecting to Wi-Fi");
+  WiFi.begin(SSID, PASSWORD);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println();
+  Serial.println("Wi-Fi connected");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void loop() {
+  delay(1000);
+}
+```
+
+接続できないときは、まず次を確認してください。
+
+- 2.4GHz の SSID を使っているか
+- SSID とパスワードにタイプミスがないか
+- 電源供給が不安定でないか
+
+---
+
+## 11. Ambient で可視化する
+
+### 11.1 Ambient とは
+
+Ambient は、IoT データを受け取ってグラフ表示できるサービスです。
+
+- サイト: <https://ambidata.io/>
+
+まずユーザー登録し、チャネルを 1 つ作成してください。演習では少なくとも次を控えます。
+
+- チャネル ID
+- ライトキー
+
+### 11.2 Pico 2 W での送信方針
+
+元の資料では `ESP32 / ESP8266` 向け Ambient ライブラリを使う流れになっていましたが、Pico 2 W では HTTP POST で直接送るほうが扱いやすいです。
+
+送信先は次の形式です。
+
+```text
+http://ambidata.io/api/v2/channels/チャネルID/data
+```
+
+送る JSON は次の形です。
+
+```json
+{
+  "writeKey": "ライトキー",
+  "d1": 24.8,
+  "d2": 51.2,
+  "d3": 1008.5
+}
+```
+
+ここでは次の対応にします。
+
+- `d1`: 温度
+- `d2`: 湿度
+- `d3`: 気圧
+
+### 11.3 センサ + Wi-Fi + Ambient の統合サンプル
+
+```cpp
+#include <Wire.h>
+#include <WiFi.h>
+#include <Adafruit_BMP280.h>
+#include <Adafruit_AHTX0.h>
+
+const char* SSID = "YOUR_SSID";
+const char* PASSWORD = "YOUR_PASSWORD";
+
+const char* HOST = "ambidata.io";
+const int PORT = 80;
+const char* CHANNEL_ID = "YOUR_CHANNEL_ID";
+const char* WRITE_KEY = "YOUR_WRITE_KEY";
+
+Adafruit_BMP280 bmp;
+Adafruit_AHTX0 aht;
+WiFiClient client;
+
+void connectWiFi() {
+  if (WiFi.status() == WL_CONNECTED) {
+    return;
+  }
+
+  Serial.print("Connecting to Wi-Fi");
+  WiFi.begin(SSID, PASSWORD);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println();
+  Serial.println("Wi-Fi connected");
+}
+
+bool sendToAmbient(float temperature, float humidity, float pressure) {
+  String body = "{";
+  body += "\"writeKey\":\"" + String(WRITE_KEY) + "\",";
+  body += "\"d1\":" + String(temperature, 2) + ",";
+  body += "\"d2\":" + String(humidity, 2) + ",";
+  body += "\"d3\":" + String(pressure, 2);
+  body += "}";
+
+  if (!client.connect(HOST, PORT)) {
+    Serial.println("Ambient connection failed");
+    return false;
+  }
+
+  String path = "/api/v2/channels/" + String(CHANNEL_ID) + "/data";
+
+  client.print("POST " + path + " HTTP/1.1\r\n");
+  client.print("Host: " + String(HOST) + "\r\n");
+  client.print("Content-Type: application/json\r\n");
+  client.print("Connection: close\r\n");
+  client.print("Content-Length: " + String(body.length()) + "\r\n");
+  client.print("\r\n");
+  client.print(body);
+
+  unsigned long start = millis();
+  while (!client.available() && millis() - start < 5000) {
+    delay(10);
+  }
+
+  while (client.available()) {
+    Serial.write(client.read());
+  }
+
+  client.stop();
+  return true;
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(2000);
+
+  Wire.setSDA(4);
+  Wire.setSCL(5);
+  Wire.begin();
+
+  if (!bmp.begin(0x76)) {
+    Serial.println("BMP280 not found");
+    while (1) {
+      delay(100);
+    }
+  }
+
+  if (!aht.begin()) {
+    Serial.println("AHT20 not found");
+    while (1) {
+      delay(100);
+    }
+  }
+
+  connectWiFi();
+}
+
+void loop() {
+  sensors_event_t humidityEvent, tempEvent;
+  aht.getEvent(&humidityEvent, &tempEvent);
+
+  float temperature = tempEvent.temperature;
+  float humidity = humidityEvent.relative_humidity;
+  float pressure = bmp.readPressure() / 100.0;
+
+  Serial.print("Temperature [C]: ");
+  Serial.println(temperature);
+  Serial.print("Humidity [%]: ");
+  Serial.println(humidity);
+  Serial.print("Pressure [hPa]: ");
+  Serial.println(pressure);
+
+  sendToAmbient(temperature, humidity, pressure);
+
+  // Ambient は短すぎる送信間隔だと受信されないことがあるので、
+  // 演習では 10 秒以上あけておくと扱いやすいです。
+  delay(10000);
+}
+```
+
+### 11.4 Ambient 側の確認
+
+データが送れたら Ambient のチャネル画面を開き、グラフを追加してください。
+
+おすすめの割り当ては次の通りです。
+
+- `d1`: 温度
+- `d2`: 湿度
+- `d3`: 気圧
+
+まずはリスト表示で受信できているかを確認し、その後に折れ線グラフへ切り替えると分かりやすいです。
+
+---
+
+## 12. 演習課題
+
+### 演習 1
+
+L チカを成功させてください。
+
+### 演習 2
+
+ボタンを押したときだけ LED が点灯するようにしてください。
+
+### 演習 3
+
+I2C スキャナで、BMP280 と AHT20 のアドレスを確認してください。
+
+### 演習 4
+
+BMP280 と AHT20 の値をシリアルモニタに表示してください。
+
+### 演習 5
+
+Wi-Fi に接続し、IP アドレスを表示してください。
+
+### 演習 6
+
+Ambient に温度、湿度、気圧を送信し、チャートで確認してください。
+
+---
+
+## 13. うまくいかないときの確認項目
+
+### 書き込みできない
+
+- 初回は `BOOTSEL` 押下で接続したか
+- `UF2 Board` または正しいシリアルポートを選んだか
+- USB ケーブルが給電専用でないか
+
+### センサが見つからない
+
+- `3V3` と `GND` が逆になっていないか
+- `SDA` と `SCL` が逆でないか
+- `Wire.setSDA(4)` と `Wire.setSCL(5)` を忘れていないか
+- BMP280 のアドレスが `0x76` か `0x77` か
+
+### Wi-Fi につながらない
+
+- 2.4GHz の AP を使っているか
+- SSID / パスワードが正しいか
+- USB 電源が弱くないか
+
+### Ambient に出ない
+
+- `CHANNEL_ID` と `WRITE_KEY` が正しいか
+- 送信間隔が短すぎないか
+- シリアルモニタに HTTP 応答が出ているか
+
+---
+
+## 14. まとめ
+
+この演習では、Pico 2 W を使って次の流れを一通り体験しました。
+
+1. Arduino IDE からマイコンへ書き込む
+2. GPIO で LED とボタンを扱う
+3. I2C で BMP280 と AHT20 を読む
+4. Wi-Fi に接続する
+5. Ambient に送信して可視化する
+
+ここまでできれば、IoT 端末の基本形は作れています。次に機能を増やすとしたら、次の方向が自然です。
+
+- 送信失敗時の再送
+- 深夜や一定間隔での省電力動作
+- HTTPS 化
+- データ改ざんや盗み見への対策
+
+この続きとして、別資料でネットワーク観測やセキュリティ演習を追加できます。
+
+---
+
+## 15. 演習課題と提出条件
+
+### 課題 A: GPIO と入力
+
+次の動作を 1 本のスケッチで実装してください。
+
+- 起動直後に LED が 3 回点滅する
+- その後は、ボタンを押している間だけ LED が点灯する
+
+### 課題 B: センサ読み取り
+
+`BMP280 + AHT20` を接続し、シリアルモニタに次の 4 項目を 2 秒ごとに表示してください。
+
+- BMP280 の温度
+- BMP280 の気圧
+- AHT20 の温度
+- AHT20 の湿度
+
+### 課題 C: Ambient 可視化
+
+Ambient に次の 3 項目を送信してください。
+
+- `d1`: 温度
+- `d2`: 湿度
+- `d3`: 気圧
+
+Ambient 上で少なくとも 1 回以上データ受信が確認できることを条件とします。
+
+### 提出物
+
+提出時には次の 4 点をそろえてください。
+
+1. `main.ino` または提出対象の `.ino` ファイル全文
+2. 配線が分かる写真 1 枚
+3. シリアルモニタの表示が分かるスクリーンショット 1 枚
+4. Ambient のチャネル画面でデータが記録されていることが分かるスクリーンショット 1 枚
+
+### 合格条件
+
+次の条件をすべて満たしたものを完了とします。
+
+- ソースコードがコンパイル可能である
+- LED とボタンの動作が説明文通りである
+- シリアルモニタに 4 項目の値が表示されている
+- Ambient に少なくとも 1 回以上データが送信されている
+
+### 提出時にコードへ必ず書くコメント
+
+提出コードの先頭に、次の 3 点をコメントで明記してください。
+
+- 使用した Wi-Fi 以外のハード構成
+- BMP280 の I2C アドレス
+- 温度として BMP280 と AHT20 のどちらを `d1` に送ったか
