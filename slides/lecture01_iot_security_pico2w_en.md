@@ -601,9 +601,19 @@ Expected addresses:
 - BMP280: `0x77`
 - AHT20: `0x38`
 
+However, the BMP280 may sometimes appear at an address other than `0x77`, depending on the board or wiring condition. If the I2C scanner shows a BMP280 address other than `0x77`, you must **use that detected address in the later programs as well**.
+
+For example, if later code contains:
+
+```cpp
+bmp.begin(0x77)
+```
+
+replace `0x77` with the actual detected address.
+
 ### 9.5 Sensor Check
 
-Use this minimal test. The BMP280 address is `0x77` in this class setup.
+Use this minimal test. The BMP280 address is `0x77` in this class setup. If your scanner detected a different BMP280 address, replace the address here as well.
 
 ```cpp
 #include <Wire.h>
