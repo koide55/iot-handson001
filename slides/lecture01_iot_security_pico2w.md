@@ -481,7 +481,14 @@ I2C は、マイコンと周辺機器を少ない配線で接続するための�
 
 ### 9.2 今回使うセンサ
 
-今回の構成では、1 個のセンサで全部まかなうのではなく、2 つのセンサを組み合わせます。
+今回の構成では、`BMP280` と `AHT20` が同じ基板に載っているセンサモジュールを使います。基板上には次の 4 本のピンだけが出ています。
+
+- `VDD`
+- `SDA`
+- `GND`
+- `SCL`
+
+内部的には 2 つのセンサが I2C バスで接続されており、この 4 本を Pico 2 W へつなぐだけで利用できます。
 
 - `BMP280`
   - 温度
@@ -494,7 +501,7 @@ I2C は、マイコンと周辺機器を少ない配線で接続するための�
 
 ### 9.3 配線
 
-I2C はバス接続なので、2 つのセンサを同じ SDA/SCL にぶら下げます。
+今回はセンサが 1 枚の基板にまとまっているので、受講者が配線するのは 4 本だけです。
 
 #### Pico 2 W 側の割り当て
 
@@ -505,21 +512,65 @@ I2C はバス接続なので、2 つのセンサを同じ SDA/SCL にぶら下�
 - `3V3(OUT)` -> `VCC` / `VIN`
 - `GND` -> `GND`
 
-#### BMP280
+#### センサ基板側
 
-- `VCC` -> `3V3(OUT)`
-- `GND` -> `GND`
+- `VDD` -> `3V3(OUT)`
 - `SDA` -> `GP4`
-- `SCL` -> `GP5`
-- `CSB` -> 未接続
-- `SDO` -> 未接続
-
-#### AHT20
-
-- `VCC` -> `3V3(OUT)`
 - `GND` -> `GND`
-- `SDA` -> `GP4`
 - `SCL` -> `GP5`
+
+#### Pico 2 W 上で今回使う実ピン
+
+| 信号名 | 物理ピン番号 | 位置 |
+|---|---:|---|
+| `GP4` | 6 | 左側の上から 6 番目 |
+| `GP5` | 7 | 左側の上から 7 番目 |
+| `GND` | 8 | 左側の上から 8 番目 |
+| `3V3(OUT)` | 36 | 右側の上から 5 番目 |
+
+より正確な全体配置を確認したい場合は、Raspberry Pi 公式データシートも参照してください。
+
+- 公式データシート: <https://pip-assets.raspberrypi.com/categories/1088-raspberry-pi-pico-2-w/documents/RP-008304-DS-2-pico-2-w-datasheet.pdf?disposition=inline>
+
+特に **6ページのレイアウト図** を見ながら、今回の `GP4`、`GP5`、`GND`、`3V3(OUT)` の位置を照らし合わせてください。
+
+配線位置のイメージは次の通りです。
+
+```text
+左側上部                         右側上部
+1   GP0                         40  VBUS
+2   GP1                         39  VSYS
+3   GND                         38  GND
+4   GP2                         37  3V3_EN
+5   GP3                         36  3V3(OUT) ← センサ VDD
+6   GP4   ← センサ SDA
+7   GP5   ← センサ SCL
+8   GND   ← センサ GND
+```
+
+```mermaid
+flowchart LR
+    subgraph P["Raspberry Pi Pico 2 W"]
+        P36["Pin 36: 3V3(OUT)"]
+        P6["Pin 6: GP4 / SDA"]
+        P8["Pin 8: GND"]
+        P7["Pin 7: GP5 / SCL"]
+    end
+
+    subgraph S["BMP280 + AHT20 sensor board"]
+        VDD["VDD"]
+        SDA["SDA"]
+        GND2["GND"]
+        SCL["SCL"]
+    end
+
+    P36 --> VDD
+    P6 --> SDA
+    P8 --> GND2
+    P7 --> SCL
+```
+
+この図は授業用の簡略図です。センサ基板上の `VDD`、`SDA`、`GND`、`SCL` の 4 本を、Pico 2 W の対応するピンへそのままつなぐと覚えてください。
 
 ### 9.4 I2C スキャナ
 
@@ -554,12 +605,12 @@ void loop() {
 
 一般的には次のようなアドレスが見えます。
 
-- BMP280: `0x76` または `0x77`
+- BMP280: `0x77`
 - AHT20: `0x38`
 
 ### 9.5 センサ単体の確認
 
-ライブラリ付属のサンプルで確認しても構いませんが、Pico 2 W では I2C ピンを明示したほうが分かりやすいので、ここでは最初から最小コードを示します。
+ライブラリ付属のサンプルで確認しても構いませんが、Pico 2 W では I2C ピンを明示したほうが分かりやすいので、ここでは最初から最小コードを示します。今回の基板では、BMP280 のアドレスは `0x77` 前提で進めます。
 
 ```cpp
 #include <Wire.h>
@@ -577,8 +628,8 @@ void setup() {
   Wire.setSCL(5);
   Wire.begin();
 
-  if (!bmp.begin(0x76)) {
-    Serial.println("BMP280 not found at 0x76");
+  if (!bmp.begin(0x77)) {
+    Serial.println("BMP280 not found at 0x77");
     while (1) {
       delay(100);
     }
@@ -614,8 +665,6 @@ void loop() {
   delay(2000);
 }
 ```
-
-BMP280 の I2C アドレスが `0x76` でない場合は `0x77` に変えて試してください。
 
 ---
 
