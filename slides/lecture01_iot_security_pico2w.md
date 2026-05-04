@@ -244,6 +244,12 @@ Pico 2 W 上で今回使う実ピンは次の通りです。
 | `GP15` | 20 | 左側いちばん下 |
 | `GND` | 18 | 左側の下から 3 番目 |
 
+より正確な全体配置を確認したい場合は、Raspberry Pi 公式データシートも参照してください。
+
+- 公式データシート: <https://pip-assets.raspberrypi.com/categories/1088-raspberry-pi-pico-2-w/documents/RP-008304-DS-2-pico-2-w-datasheet.pdf?disposition=inline>
+
+特に **6ページのレイアウト図** を見ながら、今回の `GP15` と `GND` の位置を照らし合わせてください。
+
 左側の下半分だけ抜き出すと、次の位置関係になります。
 
 ```text
