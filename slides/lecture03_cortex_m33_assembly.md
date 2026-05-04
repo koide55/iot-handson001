@@ -62,7 +62,7 @@
 
 この回では、次のような役割分担にします。
 
-- `main.ino`
+- `pico2w-cortexm33-asm-worksheet.ino`
   - GPIO 初期化
   - `loop()`
   - ボタン入力
@@ -116,19 +116,19 @@ void loop() {
 
 ```text
 part2-pico2w-asm/
-  main.ino
+  pico2w-cortexm33-asm-worksheet.ino
   led_asm.S
   gpio_constants.h
   README.md
 ```
 
-今回の講義では、`main.ino` と `led_asm.S` の対応を見ることが重要です。
+今回の講義では、`.ino` ファイルと `led_asm.S` の対応を見ることが重要です。
 
 ---
 
 ## 7. C から asm を呼び出す
 
-`main.ino` 側では、アセンブラ関数を次のように宣言します。
+`.ino` 側では、アセンブラ関数を次のように宣言します。
 
 ```cpp
 extern "C" void led_on_asm(void);
@@ -572,7 +572,7 @@ reg = (reg & ~(0x3 << 4)) | (value << 4);
 
 提出時には次の 5 点をそろえてください。
 
-1. `main.ino`
+1. `pico2w-cortexm33-asm-worksheet.ino`
 2. `led_asm.S`
 3. シリアルモニタ出力のスクリーンショット 1 枚
 4. LED 動作が分かる写真または短い動画 1 本

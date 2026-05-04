@@ -12,7 +12,7 @@ Use this version when:
 
 ## Files
 
-- `main.ino`
+- `pico2w-cortexm33-asm-complete.ino`
 - `asm_api.h`
 - `led_asm.S`
 

@@ -128,11 +128,11 @@ Arduino IDE では、次の手順で開きます。
 
 1. `File -> Open`
 2. 使いたいプロジェクトフォルダを選ぶ
-3. そのフォルダ内の `main.ino` を開く
+3. そのフォルダ名と同じ `.ino` ファイルを開く
 
 フォルダを正しく開けると、同じフォルダにある
 
-- `main.ino`
+- フォルダ名と同じ `.ino`
 - `asm_api.h`
 - `led_asm.S`
 
@@ -142,7 +142,7 @@ Arduino IDE では、次の手順で開きます。
 
 - ZIP を展開せずにそのまま開こうとする
 - リポジトリの親フォルダを開いてしまう
-- `main.ino` ではなく別のファイルだけを単独で開く
+- フォルダ名と一致する `.ino` ではなく別のファイルだけを単独で開く
 - `led_asm.S` の拡張子を変えてしまう
 
 ---
@@ -153,7 +153,7 @@ Arduino IDE では、次の手順で開きます。
 
 ```text
 pico2w-cortexm33-asm-worksheet/
-  main.ino
+  pico2w-cortexm33-asm-worksheet.ino
   asm_api.h
   led_asm.S
   README.md
@@ -161,7 +161,7 @@ pico2w-cortexm33-asm-worksheet/
 
 それぞれの役割は次の通りです。
 
-- `main.ino`
+- `pico2w-cortexm33-asm-worksheet.ino`
   - GPIO 初期化
   - シリアル出力
   - ボタン入力
@@ -211,9 +211,9 @@ LED が点滅すれば、配線と書き込みは正常です。ここで動か�
 
 ## 9. 穴埋め版を開く
 
-次に、穴埋め版プロジェクトの [main.ino](/Users/koide/Documents/Playground/iot-handson/projects/pico2w-cortexm33-asm-worksheet/main.ino) と [led_asm.S](/Users/koide/Documents/Playground/iot-handson/projects/pico2w-cortexm33-asm-worksheet/led_asm.S) を開いてください。
+次に、穴埋め版プロジェクトの [pico2w-cortexm33-asm-worksheet.ino](/Users/koide/Documents/Playground/iot-handson/projects/pico2w-cortexm33-asm-worksheet/pico2w-cortexm33-asm-worksheet.ino) と [led_asm.S](/Users/koide/Documents/Playground/iot-handson/projects/pico2w-cortexm33-asm-worksheet/led_asm.S) を開いてください。
 
-`main.ino` には C 側の流れが書いてあります。今回受講者が主に編集するのは `led_asm.S` です。
+`.ino` ファイルには C 側の流れが書いてあります。今回受講者が主に編集するのは `led_asm.S` です。
 
 ### 9.1 `led_asm.S` はどこで編集するか
 
@@ -228,7 +228,7 @@ Arduino IDE は `.ino` の編集には向いていますが、`.S` ファイル�
 
 ### 9.2 編集手順
 
-1. Arduino IDE で穴埋め版プロジェクトの `main.ino` を開く
+1. Arduino IDE で穴埋め版プロジェクトの `pico2w-cortexm33-asm-worksheet.ino` を開く
 2. Finder またはエクスプローラで、同じフォルダにある `led_asm.S` を探す
 3. `led_asm.S` を `VS Code` で開く
 4. `TODO` を 1 か所だけ埋める
@@ -253,7 +253,7 @@ Arduino IDE は `.ino` の編集には向いていますが、`.S` ファイル�
 
 ## 10. まず読むべき C 側コード
 
-`main.ino` で見てほしい点は次の 3 つです。
+`.ino` ファイルで見てほしい点は次の 3 つです。
 
 1. `g_led_state` という 1 ビット相当の状態を持っている
 2. asm 関数はその状態を書き換える
@@ -595,7 +595,7 @@ reg = (reg & ~(0x3 << 4)) | ((value & 0x3) << 4);
 
 提出時には次の 4 点をそろえてください。
 
-1. `main.ino`
+1. `pico2w-cortexm33-asm-worksheet.ino`
 2. `led_asm.S`
 3. シリアルモニタのスクリーンショット 1 枚
 4. 動作確認メモ 1 本

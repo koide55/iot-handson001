@@ -24,7 +24,7 @@ This keeps the project focused on the instruction behavior itself and avoids dep
 
 ## Files
 
-- `main.ino`
+- `pico2w-cortexm33-asm.ino`
   - Arduino sketch
 - `led_asm.S`
   - ARM Thumb assembly functions
