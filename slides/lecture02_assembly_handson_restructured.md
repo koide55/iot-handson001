@@ -89,6 +89,62 @@
 
 受講者は原則こちらを使います。
 
+### 5.1 GitHub から取り込む場合
+
+授業で GitHub リポジトリを配布する場合は、次のどちらかの方法で取り込みます。
+
+#### 方法 A: `Download ZIP` を使う
+
+1. 講師から指定された GitHub リポジトリをブラウザで開く
+2. `Code` ボタンを押す
+3. `Download ZIP` を選ぶ
+4. ダウンロードした ZIP ファイルを展開する
+5. 展開したフォルダの中から、今回使うプロジェクトフォルダを確認する
+
+`git` に慣れていない受講者は、この方法で十分です。
+
+#### 方法 B: `git clone` を使う
+
+ターミナルが使える場合は、次のように取得できます。
+
+```bash
+git clone <講師が指定したGitHubリポジトリURL>
+```
+
+取得後、そのフォルダの中にある今回のプロジェクトを使います。
+
+### 5.2 Arduino IDE で開くフォルダ
+
+GitHub から取得したあとに Arduino IDE で開くのは、**リポジトリの一番上のフォルダ全体ではなく、今回使うスケッチのフォルダ** です。
+
+たとえば今回の配布物であれば、次のどちらかを開きます。
+
+- `pico2w-cortexm33-asm-complete`
+- `pico2w-cortexm33-asm-worksheet`
+
+### 5.3 開き方
+
+Arduino IDE では、次の手順で開きます。
+
+1. `File -> Open`
+2. 使いたいプロジェクトフォルダを選ぶ
+3. そのフォルダ内の `main.ino` を開く
+
+フォルダを正しく開けると、同じフォルダにある
+
+- `main.ino`
+- `asm_api.h`
+- `led_asm.S`
+
+がタブとして見えることがあります。
+
+### 5.4 よくある失敗
+
+- ZIP を展開せずにそのまま開こうとする
+- リポジトリの親フォルダを開いてしまう
+- `main.ino` ではなく別のファイルだけを単独で開く
+- `led_asm.S` の拡張子を変えてしまう
+
 ---
 
 ## 6. プロジェクト構成
@@ -158,6 +214,40 @@ LED が点滅すれば、配線と書き込みは正常です。ここで動か�
 次に、穴埋め版プロジェクトの [main.ino](/Users/koide/Documents/Playground/iot-handson/projects/pico2w-cortexm33-asm-worksheet/main.ino) と [led_asm.S](/Users/koide/Documents/Playground/iot-handson/projects/pico2w-cortexm33-asm-worksheet/led_asm.S) を開いてください。
 
 `main.ino` には C 側の流れが書いてあります。今回受講者が主に編集するのは `led_asm.S` です。
+
+### 9.1 `led_asm.S` はどこで編集するか
+
+Arduino IDE は `.ino` の編集には向いていますが、`.S` ファイルの編集は VS Code などの外部エディタを使うほうが分かりやすいです。
+
+おすすめは次のどちらかです。
+
+- `VS Code`
+- `テキストエディット` や `メモ帳` 以外のプレーンテキストエディタ
+
+授業では、**Arduino IDE でビルドと書き込みを行い、`led_asm.S` は VS Code で編集する** 進め方を勧めます。
+
+### 9.2 編集手順
+
+1. Arduino IDE で穴埋め版プロジェクトの `main.ino` を開く
+2. Finder またはエクスプローラで、同じフォルダにある `led_asm.S` を探す
+3. `led_asm.S` を `VS Code` で開く
+4. `TODO` を 1 か所だけ埋める
+5. 保存する
+6. Arduino IDE に戻って `Verify` または `Upload` を実行する
+
+このように、**編集は外部エディタ、ビルドと書き込みは Arduino IDE** と役割を分けると進めやすくなります。
+
+### 9.3 ファイル拡張子に注意
+
+`led_asm.S` の末尾は **大文字の `S`** です。小文字の `.s` に変えたり、`.txt` を付けてしまったりしないように注意してください。
+
+特に次は避けてください。
+
+- `led_asm.s`
+- `led_asm.S.txt`
+- `led_asm`
+
+ファイル名が変わると、Arduino IDE 側で正しくアセンブラファイルとして扱われないことがあります。
 
 ---
 
