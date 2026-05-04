@@ -34,6 +34,8 @@ This directory contains Markdown-first lecture materials rebuilt from the origin
 - [slides/lecture02a_cortex_m33_assembly_primer_en.md](slides/lecture02a_cortex_m33_assembly_primer_en.md)
 - [slides/lecture03_cortex_m33_assembly.md](slides/lecture03_cortex_m33_assembly.md)
 - [slides/lecture03_cortex_m33_assembly_en.md](slides/lecture03_cortex_m33_assembly_en.md)
+- [slides/lecture04_cortex_m33_vs_hazard3.md](slides/lecture04_cortex_m33_vs_hazard3.md)
+- [slides/lecture04_cortex_m33_vs_hazard3_en.md](slides/lecture04_cortex_m33_vs_hazard3_en.md)
 - [projects/pico2w-cortexm33-asm/README.md](projects/pico2w-cortexm33-asm/README.md)
 - [projects/pico2w-cortexm33-asm-complete/README.md](projects/pico2w-cortexm33-asm-complete/README.md)
 - [projects/pico2w-cortexm33-asm-worksheet/README.md](projects/pico2w-cortexm33-asm-worksheet/README.md)

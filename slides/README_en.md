@@ -10,6 +10,7 @@ This directory contains the lecture materials for the `Raspberry Pi Pico 2 W wit
 | 2 | Main Cortex-M33 assembly hands-on guide | [lecture02_assembly_handson_restructured.md](lecture02_assembly_handson_restructured.md) |
 | 2.5 | Gentle Cortex-M33 assembly primer to read before the hands-on | [lecture02a_cortex_m33_assembly_primer.md](lecture02a_cortex_m33_assembly_primer.md) |
 | 3 | Cortex-M33 assembly explanation and exercise overview | [lecture03_cortex_m33_assembly.md](lecture03_cortex_m33_assembly.md) |
+| 4 | Advanced comparison of Cortex-M33 and Hazard3 | [lecture04_cortex_m33_vs_hazard3.md](lecture04_cortex_m33_vs_hazard3.md) |
 
 ## English Versions
 
@@ -19,6 +20,7 @@ This directory contains the lecture materials for the `Raspberry Pi Pico 2 W wit
 | 2 | Main Cortex-M33 assembly hands-on guide | [lecture02_assembly_handson_restructured_en.md](lecture02_assembly_handson_restructured_en.md) |
 | 2.5 | Gentle Cortex-M33 assembly primer to read before the hands-on | [lecture02a_cortex_m33_assembly_primer_en.md](lecture02a_cortex_m33_assembly_primer_en.md) |
 | 3 | Cortex-M33 assembly explanation and exercise overview | [lecture03_cortex_m33_assembly_en.md](lecture03_cortex_m33_assembly_en.md) |
+| 4 | Advanced comparison of Cortex-M33 and Hazard3 | [lecture04_cortex_m33_vs_hazard3_en.md](lecture04_cortex_m33_vs_hazard3_en.md) |
 
 ## Recommended Reading Order
 
