@@ -78,6 +78,57 @@
 
 ソフトウェア側では `INPUT_PULLUP` を使います。そのため、押していないときは `HIGH`、押したときは `LOW` になります。
 
+### Pico 2 W 上で今回使う実ピン
+
+| 信号名 | 物理ピン番号 | 位置 |
+|---|---:|---|
+| `GP14` | 19 | 左側のいちばん下から 2 番目 |
+| `GP15` | 20 | 左側のいちばん下 |
+| `GND` | 18 | 左側の下から 3 番目 |
+
+より正確な全体配置を確認したい場合は、Raspberry Pi 公式データシートも参照してください。
+
+- 公式データシート: <https://pip-assets.raspberrypi.com/categories/1088-raspberry-pi-pico-2-w/documents/RP-008304-DS-2-pico-2-w-datasheet.pdf?disposition=inline>
+
+特に **6ページのレイアウト図** を見ながら、今回の `GP14`、`GP15`、`GND` の位置を照らし合わせてください。
+
+左側の下半分だけ抜き出すと、位置関係は次のようになります。
+
+```text
+左側下部
+14  GP10
+15  GP11
+16  GP12
+17  GP13
+18  GND   ← LED の短い足 / ボタン片側ではない側
+19  GP14  ← ボタン片側
+20  GP15  ← 抵抗を介して LED の長い足
+```
+
+LED とボタンをまとめた配線イメージは次の通りです。
+
+```mermaid
+flowchart LR
+    subgraph P["Raspberry Pi Pico 2 W"]
+        P20["Pin 20: GP15"]
+        P19["Pin 19: GP14"]
+        P18["Pin 18: GND"]
+    end
+
+    R["220Ω-1kΩ"]
+    LED["LED"]
+    SW["Push button"]
+
+    P20 --> R
+    R --> LED
+    LED --> P18
+
+    P19 --> SW
+    SW --> P18
+```
+
+この図は授業用の簡略図です。重要なのは、**LED は `GP15` と `GND`、ボタンは `GP14` と `GND` の間につなぐ** ことです。
+
 ---
 
 ## 5. 使う配布物
