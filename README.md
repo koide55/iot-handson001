@@ -24,6 +24,7 @@ This directory contains Markdown-first lecture materials rebuilt from the origin
 
 - [slides/lecture01_iot_security_pico2w.md](slides/lecture01_iot_security_pico2w.md)
 - [slides/lecture02_assembly_handson_restructured.md](slides/lecture02_assembly_handson_restructured.md)
+- [slides/lecture02a_cortex_m33_assembly_primer.md](slides/lecture02a_cortex_m33_assembly_primer.md)
 - [slides/lecture03_cortex_m33_assembly.md](slides/lecture03_cortex_m33_assembly.md)
 - [projects/pico2w-cortexm33-asm/README.md](projects/pico2w-cortexm33-asm/README.md)
 - [projects/pico2w-cortexm33-asm-complete/README.md](projects/pico2w-cortexm33-asm-complete/README.md)

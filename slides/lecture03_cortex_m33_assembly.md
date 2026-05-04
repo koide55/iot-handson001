@@ -18,6 +18,10 @@
 - `RBIT` / `REV` / `CLZ`
 - `LDREX` / `STREX` は発展
 
+演習前のやさしい予習資料として、次も参照してください。
+
+- [第2.5回 Cortex-M33 アセンブラ超入門](/Users/koide/Documents/Playground/iot-handson/slides/lecture02a_cortex_m33_assembly_primer.md)
+
 ---
 
 ## 1. 今日やること

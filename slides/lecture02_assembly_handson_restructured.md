@@ -26,6 +26,14 @@
 6. `CBZ` でボタン押下判定を書く
 7. `UBFX` / `BFI` / `RBIT` / `REV` / `CLZ` を確認する
 
+### 先に読んでほしい資料
+
+この回に入る前に、次の資料を先に読んでください。
+
+- [第2.5回 Cortex-M33 アセンブラ超入門](/Users/koide/Documents/Playground/iot-handson/slides/lecture02a_cortex_m33_assembly_primer.md)
+
+特に、`ldr`、`str`、`movs`、`orrs`、`bics`、`eors`、`cbz` の意味がまだ曖昧な場合は、先にこちらを読んでから進めてください。
+
 ---
 
 ## 2. 到達目標
