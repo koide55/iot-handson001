@@ -32,3 +32,7 @@ IoT 演習から入る場合は次の順番を勧めます。
 English index:
 
 - [README_en.md](README_en.md)
+- [lecture01_iot_security_pico2w_en.md](lecture01_iot_security_pico2w_en.md)
+- [lecture02_assembly_handson_restructured_en.md](lecture02_assembly_handson_restructured_en.md)
+- [lecture02a_cortex_m33_assembly_primer_en.md](lecture02a_cortex_m33_assembly_primer_en.md)
+- [lecture03_cortex_m33_assembly_en.md](lecture03_cortex_m33_assembly_en.md)
