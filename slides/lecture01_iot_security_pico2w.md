@@ -98,7 +98,11 @@ Mac では `Arduino IDE -> Settings` から設定を開きます。
 https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
 ```
 
-その後、`Tools -> Board -> Boards Manager` を開き、`pico` で検索し、`Arduino-Pico` をインストールします。
+その後、`Tools -> Board -> Boards Manager` を開き、`pico` で検索します。今回インストールする対象は、`Arduino-Pico` という通称ではなく、実際の画面上では次のような名前で表示されることがあります。
+
+- `Raspberry Pi Pico/RP2040/RP2350 by Earle F. Philhower, III`
+
+この項目が見つかったら、`Install` または `Add` を選んでインストールしてください。すでにインストール済みの場合でも `UPDATE` が表示されることがあります。その場合は、可能なら最新版へ更新してください。
 
 検索結果に `Arduino-Pico` という文字列がそのまま出ない場合があります。そのときは次の語でも検索してください。
 
@@ -107,11 +111,7 @@ https://github.com/earlephilhower/arduino-pico/releases/download/global/package_
 - `Earle Philhower`
 - `Raspberry Pi Pico`
 
-現行の Arduino IDE では、次のような名前で表示されることがあります。
-
-- `Raspberry Pi Pico/RP2040/RP2350 by Earle F. Philhower, III`
-
-見つかったら、その項目の `Install` または `Add` を選んでください。
+現行の Arduino IDE では、今回の対象パッケージは `Raspberry Pi Pico/RP2040` のように途中までしか見えないことがありますが、作成者名が `Earle F. Philhower, III` であれば正しい候補です。
 
 それでも出てこない場合は、次を順に確認してください。
 
