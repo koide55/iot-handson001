@@ -9,6 +9,8 @@ This directory contains the Arduino IDE projects used in the Cortex-M33 assembly
 | Minimal | Small sample project for quick instruction demos | [pico2w-cortexm33-asm](pico2w-cortexm33-asm/README.md) |
 | Complete | Instructor demo and answer-key version | [pico2w-cortexm33-asm-complete](pico2w-cortexm33-asm-complete/README.md) |
 | Worksheet | Student exercise version with `TODO` sections | [pico2w-cortexm33-asm-worksheet](pico2w-cortexm33-asm-worksheet/README.md) |
+| Receiver | Minimal Python receiver server for the IoT / MTD exercises | [local-python-receiver](local-python-receiver/README.md) |
+| Sender | Minimal Pico 2 W sender sketch for the IoT / MTD exercises | [pico2w-local-post-sender](pico2w-local-post-sender/README.md) |
 
 ## Which One to Use
 
@@ -34,6 +36,8 @@ For example:
 Slides index:
 
 - [../slides/README_en.md](../slides/README_en.md)
+- [local-python-receiver/README_en.md](local-python-receiver/README_en.md)
+- [pico2w-local-post-sender/README_en.md](pico2w-local-post-sender/README_en.md)
 
 ## Japanese
 
