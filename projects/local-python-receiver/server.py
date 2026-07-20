@@ -384,6 +384,8 @@ class ReceiverHandler(BaseHTTPRequestHandler):
         rows = []
         for entry in reversed(entries):
             payload = entry.get("payload", {})
+            if not isinstance(payload, dict):
+                payload = {}
             status = str(entry.get("status", "-"))
             status_class = "ok" if status == "accepted" else "bad"
             rows.append(

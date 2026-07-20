@@ -24,7 +24,7 @@ It is designed for classroom use and depends only on the Python standard library
 ## Run
 
 ```bash
-cd /Users/koide/Documents/Playground/iot-handson/projects/local-python-receiver
+cd projects/local-python-receiver
 python3 server.py
 ```
 

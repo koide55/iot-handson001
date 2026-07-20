@@ -12,6 +12,7 @@ This directory contains the lecture materials for the `Raspberry Pi Pico 2 W wit
 | 3 | Cortex-M33 assembly explanation and exercise overview | [lecture03_cortex_m33_assembly.md](lecture03_cortex_m33_assembly.md) |
 | 4 | Advanced comparison of Cortex-M33 and Hazard3 | [lecture04_cortex_m33_vs_hazard3.md](lecture04_cortex_m33_vs_hazard3.md) |
 | 5 | Specification for a local Python receiver and Pico sender | [lecture05_mtd_local_post_spec.md](lecture05_mtd_local_post_spec.md) |
+| 5.5 | Design discussion on path rotation | [lecture05a_path_rotation_design_discussion.md](lecture05a_path_rotation_design_discussion.md) |
 
 ## English Versions
 
@@ -23,6 +24,7 @@ This directory contains the lecture materials for the `Raspberry Pi Pico 2 W wit
 | 3 | Cortex-M33 assembly explanation and exercise overview | [lecture03_cortex_m33_assembly_en.md](lecture03_cortex_m33_assembly_en.md) |
 | 4 | Advanced comparison of Cortex-M33 and Hazard3 | [lecture04_cortex_m33_vs_hazard3_en.md](lecture04_cortex_m33_vs_hazard3_en.md) |
 | 5 | Specification for a local Python receiver and Pico sender | [lecture05_mtd_local_post_spec_en.md](lecture05_mtd_local_post_spec_en.md) |
+| 5.5 | Design discussion on path rotation | [lecture05a_path_rotation_design_discussion_en.md](lecture05a_path_rotation_design_discussion_en.md) |
 
 ## Recommended Reading Order
 
@@ -37,8 +39,8 @@ If learners start from the IoT hands-on, the following order works well.
 
 The assembly hands-on projects are stored under `../projects/`.
 
-- Complete version: [../projects/pico2w-cortexm33-asm-complete/README.md](../projects/pico2w-cortexm33-asm-complete/README.md)
-- Worksheet version: [../projects/pico2w-cortexm33-asm-worksheet/README.md](../projects/pico2w-cortexm33-asm-worksheet/README.md)
+- Complete version: [../projects/pico2w-cortexm33-asm-complete/README_en.md](../projects/pico2w-cortexm33-asm-complete/README_en.md)
+- Worksheet version: [../projects/pico2w-cortexm33-asm-worksheet/README_en.md](../projects/pico2w-cortexm33-asm-worksheet/README_en.md)
 
 ## Japanese
 

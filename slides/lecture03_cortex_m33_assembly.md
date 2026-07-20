@@ -119,10 +119,10 @@ void loop() {
 配布用の最小構成は次のようにします。
 
 ```text
-part2-pico2w-asm/
+pico2w-cortexm33-asm-worksheet/
   pico2w-cortexm33-asm-worksheet.ino
   led_asm.S
-  gpio_constants.h
+  asm_api.h
   README.md
 ```
 
@@ -135,23 +135,30 @@ part2-pico2w-asm/
 `.ino` 側では、アセンブラ関数を次のように宣言します。
 
 ```cpp
-extern "C" void led_on_asm(void);
-extern "C" void led_off_asm(void);
-extern "C" void led_toggle_asm(void);
+extern "C" void led_on_asm(uint32_t* state);
+extern "C" void led_off_asm(uint32_t* state);
+extern "C" void led_toggle_asm(uint32_t* state);
 ```
 
 最初のループは次のようにできます。
 
 ```cpp
+volatile uint32_t g_led_state = 0;
+
 void loop() {
-  led_on_asm();
+  led_on_asm((uint32_t*)&g_led_state);
+  apply_led_state();
   delay(300);
-  led_off_asm();
+  led_off_asm((uint32_t*)&g_led_state);
+  apply_led_state();
   delay(300);
-  led_toggle_asm();
+  led_toggle_asm((uint32_t*)&g_led_state);
+  apply_led_state();
   delay(300);
 }
 ```
+
+`apply_led_state()` は、状態変数 `g_led_state` の bit 0 を見て実際の LED を点灯・消灯させる C 側の関数です（`.ino` に定義）。
 
 ここでは、「C から見れば普通の関数」であることが大事です。
 
@@ -163,11 +170,11 @@ void loop() {
 
 考え方は単純です。
 
-1. GPIO 出力用レジスタのアドレスを知る
-2. LED に対応するビットマスクを作る
-3. そのビットを 1 にする
+1. 引数 `r0` から状態変数 `*state` のアドレスを受け取る
+2. LED に対応するビットマスク（bit 0）を作る
+3. そのビットを 1 にして書き戻す
 
-この「ビットを 1 にする」が、マイコンの低レベル制御の基本です。
+この「ビットを 1 にする」が、マイコンの低レベル制御の基本です。実機の GPIO レジスタを直接叩く代わりに、まずはメモリ上の状態変数で read-modify-write の感覚をつかみます（`apply_led_state()` がその状態を LED へ反映します）。
 
 ---
 
@@ -177,9 +184,9 @@ void loop() {
 
 やることは ON の反対です。
 
-1. 同じ GPIO レジスタを見る
-2. 同じビット位置を使う
-3. そのビットを 0 にする
+1. 同じ状態変数を見る
+2. 同じビット位置（bit 0）を使う
+3. そのビットを 0 にして書き戻す
 
 ここで受講者に意識してほしいのは、
 
@@ -199,7 +206,7 @@ void loop() {
 対応する C のイメージは次です。
 
 ```cpp
-gpio_state ^= LED_MASK;
+*state ^= 1;   // bit 0 を反転
 ```
 
 アセンブラでは、ここで `EOR` が主役になります。
@@ -225,20 +232,20 @@ gpio_state ^= LED_MASK;
 
 ## 12. `EOR` のイメージ
 
-たとえば LED が 15 ビット目だとすると、
+たとえば LED の状態を bit 0 で表すとすると、
 
 ```text
-元の状態      0000 0000 0000 0000
-LED_MASK      0000 0000 0000 1000 0000 0000 0000
-EOR 後        0000 0000 0000 1000 0000 0000 0000
+元の状態    0000 0000
+LED_MASK    0000 0001
+EOR 後      0000 0001
 ```
 
 もう一度同じマスクで `EOR` すると、
 
 ```text
-元の状態      0000 0000 0000 1000 0000 0000 0000
-LED_MASK      0000 0000 0000 1000 0000 0000 0000
-EOR 後        0000 0000 0000 0000 0000 0000 0000
+元の状態    0000 0001
+LED_MASK    0000 0001
+EOR 後      0000 0000
 ```
 
 となって元に戻ります。
@@ -253,9 +260,9 @@ EOR 後        0000 0000 0000 0000 0000 0000 0000
 
 ### ねらい
 
-- レジスタにアドレスを入れる
+- ポインタ引数（`state`）のアドレスを扱う
 - ビットマスクを使う
-- メモリマップト I/O を書く
+- read-modify-write で状態を更新する
 
 ### 確認
 
@@ -364,7 +371,7 @@ EOR 後        0000 0000 0000 0000 0000 0000 0000
 
 ```cpp
 mode = (reg >> 4) & 0x3;
-reg = (reg & ~(0x3 << 4)) | (value << 4);
+reg = (reg & ~(0x3 << 4)) | ((value & 0x3) << 4);
 ```
 
 この式を読めることは大事ですが、少し見通しが悪くなります。

@@ -75,11 +75,8 @@ void loop() {
   if (should_toggle_on_press_asm(button_level)) {
     led_toggle_asm((uint32_t*)&g_led_state);
     apply_led_state();
-    delay(100);
+    delay(200);
   }
 
   delay(20);
-  
-  Serial.println("Pico 2 W Cortex-M33 assembly complete project");
-  print_demo_results();
 }

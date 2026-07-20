@@ -1,48 +1,52 @@
-# Pico 2 W Cortex-M33 Assembly Project: Complete
+# Pico 2 W Cortex-M33 アセンブラ プロジェクト: 完成版
 
-This is the instructor-ready complete version of the Cortex-M33 assembly hands-on project.
+Cortex-M33 アセンブラのハンズオンプロジェクトの、講師向け完成版です。
 
-## Purpose
+## 用途
 
-Use this version when:
+次のようなときに使います。
 
-- you want a known-good reference
-- you want to demo the expected behavior live
-- students need an answer key after the exercise
+- 正しく動く参照実装がほしい
+- 期待される動作をその場でデモしたい
+- 演習後に答え合わせ用の解答が必要
 
-## Files
+## ファイル
 
 - `pico2w-cortexm33-asm-complete.ino`
 - `asm_api.h`
 - `led_asm.S`
 
-## Board settings
+## ボード設定
 
-- Board: `Raspberry Pi Pico 2 W`
+- ボード: `Raspberry Pi Pico 2 W`
 - CPU Architecture: `ARM Cortex-M33`
 
-## Wiring
+## 配線
 
-- `GP15` -> resistor -> LED anode
-- LED cathode -> `GND`
-- optional button:
-  - one side -> `GP14`
-  - other side -> `GND`
+- `GP15` -> 抵抗 -> LED アノード
+- LED カソード -> `GND`
+- ボタン（任意）:
+  - 片側 -> `GP14`
+  - 反対側 -> `GND`
 
-## What works here
+## ここで動くもの
 
-- LED on
-- LED off
-- LED toggle by `EOR`
-- button decision by `CBZ`
+- LED 点灯
+- LED 消灯
+- `EOR` による LED 反転
+- `CBZ` によるボタン判定
 - `UBFX`
 - `BFI`
 - `RBIT`
 - `REV`
 - `CLZ`
 
-## Suggested use in class
+## 授業での使い方の例
 
-1. Demo this version first if you need to verify the environment.
-2. Hand out the worksheet version.
-3. Use this version as the post-exercise walkthrough.
+1. 環境確認が必要なら、まずこの版でデモする。
+2. 穴埋め版を配布する。
+3. 演習後の答え合わせにこの版を使う。
+
+## English
+
+- [README_en.md](README_en.md)

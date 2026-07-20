@@ -64,6 +64,7 @@ By the end, learners should be able to:
 - jumper wires
 - 1 LED
 - 1 resistor between 220 ohms and 1 kohm
+- 1 resistor of 10 megaohms (used in the Section 8 analog input exercise)
 - 1 tact switch
 - BMP280 + AHT20 sensor module
 - PC with internet access
@@ -73,7 +74,8 @@ Useful extras:
 
 - tester / multimeter
 - spare jumper wires
-- 10 megaohm resistor
+- spare resistors (e.g. 10 kohm)
+- variable resistor or CdS sensor
 
 ---
 
