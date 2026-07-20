@@ -6,11 +6,11 @@ This directory contains the Arduino IDE projects used in the Cortex-M33 assembly
 
 | Type | Purpose | Folder |
 |---|---|---|
-| Minimal | Small sample project for quick instruction demos | [pico2w-cortexm33-asm](pico2w-cortexm33-asm/README.md) |
-| Complete | Instructor demo and answer-key version | [pico2w-cortexm33-asm-complete](pico2w-cortexm33-asm-complete/README.md) |
-| Worksheet | Student exercise version with `TODO` sections | [pico2w-cortexm33-asm-worksheet](pico2w-cortexm33-asm-worksheet/README.md) |
-| Receiver | Minimal Python receiver server for the IoT / MTD exercises | [local-python-receiver](local-python-receiver/README.md) |
-| Sender | Minimal Pico 2 W sender sketch for the IoT / MTD exercises | [pico2w-local-post-sender](pico2w-local-post-sender/README.md) |
+| Minimal | Small sample project for quick instruction demos | [pico2w-cortexm33-asm](pico2w-cortexm33-asm/README_en.md) |
+| Complete | Instructor demo and answer-key version | [pico2w-cortexm33-asm-complete](pico2w-cortexm33-asm-complete/README_en.md) |
+| Worksheet | Student exercise version with `TODO` sections | [pico2w-cortexm33-asm-worksheet](pico2w-cortexm33-asm-worksheet/README_en.md) |
+| Receiver | Minimal Python receiver server for the IoT / MTD exercises | [local-python-receiver](local-python-receiver/README_en.md) |
+| Sender | Minimal Pico 2 W sender sketch for the IoT / MTD exercises | [pico2w-local-post-sender](pico2w-local-post-sender/README_en.md) |
 
 ## Which One to Use
 

@@ -1,65 +1,69 @@
-# Pico 2 W Cortex-M33 Assembly Minimal Project
+# Pico 2 W Cortex-M33 アセンブラ 最小プロジェクト
 
-This project is a minimal Arduino IDE project for the `Raspberry Pi Pico 2 W` that pairs with the Cortex-M33 assembly hands-on slides.
+このプロジェクトは、Cortex-M33 アセンブラのハンズオン用スライドと対になる、`Raspberry Pi Pico 2 W` 向けの最小 Arduino IDE プロジェクトです。
 
-## Goal
+## ねらい
 
-Keep the project small and reliable while still demonstrating useful Cortex-M33 instructions:
+プロジェクトを小さく確実に保ちつつ、Cortex-M33 の便利な命令を体験します。
 
-- `EOR` for LED toggle
-- `CBZ` / `CBNZ` for zero/non-zero branching
-- `UBFX` / `BFI` for bit-field extraction and insertion
-- `RBIT` / `REV` / `CLZ` for bit and byte operations
+- `EOR`: LED の反転
+- `CBZ` / `CBNZ`: 0 / 非 0 での分岐
+- `UBFX` / `BFI`: ビットフィールドの取り出しと埋め込み
+- `RBIT` / `REV` / `CLZ`: ビット・バイト操作
 
-## Design choice
+## 設計方針
 
-To keep the sample easy to build in Arduino IDE, this version does **not** directly poke RP2350 GPIO registers from assembly.
+Arduino IDE でビルドしやすくするため、この版ではアセンブラから RP2350 の GPIO レジスタを直接叩くことは **しません**。
 
-Instead:
+代わりに:
 
-- Arduino API handles pin setup and `digitalWrite`
-- Assembly functions manipulate a 1-bit LED state and return results to C++
+- ピン設定と `digitalWrite` は Arduino API が担当する
+- アセンブラ関数は 1 ビットの LED 状態を操作し、結果を C++ へ返す
 
-This keeps the project focused on the instruction behavior itself and avoids depending on RP2350-specific register headers.
+これにより、命令そのものの挙動に集中でき、RP2350 固有のレジスタヘッダへの依存を避けられます。
 
-## Files
+## ファイル
 
 - `pico2w-cortexm33-asm.ino`
-  - Arduino sketch
+  - Arduino スケッチ
 - `led_asm.S`
-  - ARM Thumb assembly functions
+  - ARM Thumb アセンブラ関数
 - `asm_api.h`
-  - function declarations shared with C++
+  - C++ と共有する関数宣言
 
-## Board settings
+## ボード設定
 
-In Arduino IDE:
+Arduino IDE で:
 
-- Board: `Raspberry Pi Pico 2 W`
+- ボード: `Raspberry Pi Pico 2 W`
 - CPU Architecture: `ARM Cortex-M33`
 
-This project is not for the `RISC-V Hazard3` setting.
+このプロジェクトは `RISC-V Hazard3` 設定用ではありません。
 
-## Wiring
+## 配線
 
-- `GP15` -> resistor -> LED anode
-- LED cathode -> `GND`
-- optional button:
-  - one side -> `GP14`
-  - other side -> `GND`
+- `GP15` -> 抵抗 -> LED アノード
+- LED カソード -> `GND`
+- ボタン（任意）:
+  - 片側 -> `GP14`
+  - 反対側 -> `GND`
 
-The sketch uses `INPUT_PULLUP` for the button.
+スケッチではボタンに `INPUT_PULLUP` を使います。
 
-## What the sketch does
+## スケッチの動作
 
-1. Turns LED on by calling assembly
-2. Turns LED off by calling assembly
-3. Toggles LED by calling assembly
-4. Uses a button check with `CBZ`
-5. Prints `UBFX`, `BFI`, `RBIT`, `REV`, and `CLZ` demo results to Serial
+1. アセンブラを呼んで LED を点灯する
+2. アセンブラを呼んで LED を消灯する
+3. アセンブラを呼んで LED を反転する
+4. `CBZ` を使ってボタンを判定する
+5. `UBFX`、`BFI`、`RBIT`、`REV`、`CLZ` のデモ結果をシリアルに表示する
 
-## Notes
+## 補足
 
-- The `.S` file uses unified ARM syntax and Thumb functions.
-- If you switch the board to `RISC-V Hazard3`, this file will not assemble.
-- This project is the minimal working starting point. A later version can replace the Arduino API output path with direct GPIO register writes if desired.
+- `.S` ファイルは unified ARM 構文と Thumb 関数を使います。
+- ボードを `RISC-V Hazard3` に切り替えると、このファイルはアセンブルできません。
+- このプロジェクトは、最小で動く出発点です。必要であれば、後の版で Arduino API による出力経路を GPIO レジスタ直接書き込みに置き換えられます。
+
+## English
+
+- [README_en.md](README_en.md)

@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Arduino build output
+build/
+*.hex
+*.elf
+*.bin
+
+# Editor / OS
+*.swp
+*~
+Thumbs.db

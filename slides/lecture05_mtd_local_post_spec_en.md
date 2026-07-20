@@ -262,7 +262,8 @@ Example:
 
 ```text
 Wi-Fi connecting...
-Wi-Fi connected: 192.168.10.21
+Wi-Fi connected
+Wi-Fi IP: 192.168.10.21
 POST http://192.168.10.10:5000/ingest
 payload={"device_id":"pico2w-01","seq":1,"uptime_ms":12345,"temperature_c":24.8,"humidity_pct":51.2,"pressure_hpa":1008.4}
 HTTP 200

@@ -24,7 +24,7 @@
 ## 起動方法
 
 ```bash
-cd /Users/koide/Documents/Playground/iot-handson/projects/local-python-receiver
+cd projects/local-python-receiver
 python3 server.py
 ```
 

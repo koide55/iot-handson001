@@ -1,42 +1,42 @@
-# Pico 2 W Cortex-M33 Assembly Project: Worksheet
+# Pico 2 W Cortex-M33 アセンブラ プロジェクト: 穴埋め版
 
-This is the student worksheet version of the Cortex-M33 assembly hands-on project.
+Cortex-M33 アセンブラのハンズオンプロジェクトの、受講者向け穴埋め版です。
 
-## Purpose
+## 用途
 
-Use this version when:
+次のようなときに使います。
 
-- students should fill in the assembly themselves
-- you want a guided worksheet instead of a blank file
-- you want to focus on a few core instructions
+- 受講者にアセンブラを自分で書かせたい
+- 白紙のファイルではなくガイド付きの穴埋めにしたい
+- いくつかの中心的な命令に絞りたい
 
-## Files
+## ファイル
 
 - `pico2w-cortexm33-asm-worksheet.ino`
 - `asm_api.h`
 - `led_asm.S`
 
-## Board settings
+## ボード設定
 
-- Board: `Raspberry Pi Pico 2 W`
+- ボード: `Raspberry Pi Pico 2 W`
 - CPU Architecture: `ARM Cortex-M33`
 
-## Wiring
+## 配線
 
-- `GP15` -> resistor -> LED anode
-- LED cathode -> `GND`
-- optional button:
-  - one side -> `GP14`
-  - other side -> `GND`
+- `GP15` -> 抵抗 -> LED アノード
+- LED カソード -> `GND`
+- ボタン（任意）:
+  - 片側 -> `GP14`
+  - 反対側 -> `GND`
 
-## Exercise flow
+## 演習の流れ
 
-1. Build and run once.
-2. Open `led_asm.S`.
-3. Fill each `TODO`.
-4. Rebuild after each small step.
+1. まず一度ビルドして実行する。
+2. `led_asm.S` を開く。
+3. 各 `TODO` を埋める。
+4. 小さなステップごとに再ビルドする。
 
-## Suggested order
+## おすすめの順番
 
 1. `led_on_asm`
 2. `led_off_asm`
@@ -48,8 +48,12 @@ Use this version when:
 8. `rev_demo_asm`
 9. `clz_demo_asm`
 
-## Instructor note
+## 講師向けメモ
 
-The complete answer-key version lives in:
+完成版（解答）は次の場所にあります。
 
 - `../pico2w-cortexm33-asm-complete/`
+
+## English
+
+- [README_en.md](README_en.md)

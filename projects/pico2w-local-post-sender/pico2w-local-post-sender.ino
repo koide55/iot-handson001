@@ -34,12 +34,21 @@ void connectWiFi() {
   Serial.print("Wi-Fi connecting");
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
-  while (WiFi.status() != WL_CONNECTED) {
+  const int maxAttempts = 20;   // 約 10 秒でタイムアウト
+  int attempts = 0;
+  while (WiFi.status() != WL_CONNECTED && attempts < maxAttempts) {
     delay(500);
     Serial.print(".");
+    attempts++;
   }
 
   Serial.println();
+
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Wi-Fi connect timeout; will retry next cycle");
+    return;
+  }
+
   Serial.println("Wi-Fi connected");
   Serial.print("Wi-Fi IP: ");
   Serial.println(WiFi.localIP());

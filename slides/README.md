@@ -41,3 +41,4 @@ English index:
 - [lecture03_cortex_m33_assembly_en.md](lecture03_cortex_m33_assembly_en.md)
 - [lecture04_cortex_m33_vs_hazard3_en.md](lecture04_cortex_m33_vs_hazard3_en.md)
 - [lecture05_mtd_local_post_spec_en.md](lecture05_mtd_local_post_spec_en.md)
+- [lecture05a_path_rotation_design_discussion_en.md](lecture05a_path_rotation_design_discussion_en.md)
