@@ -923,6 +923,200 @@ Confirm that the channel receives data and create charts for:
 - `d2`: humidity
 - `d3`: pressure
 
+### 11.5 Fallback When Ambient Is Unavailable: Your Own POST Endpoint (Google Sheets)
+
+Ambient is a free external service, so it can occasionally be down or congested during class. As a fallback, you can send the same sensor data to a small POST endpoint hosted with Google Apps Script, which appends each reading to a Google Sheet.
+
+There are two ways to run this in class:
+
+- **Use a shared sheet prepared by the instructor (classroom default).** The instructor deploys one sheet and endpoint and hands out the URL. Learners skip the Apps Script setup, and only edit the sketch: set `SHEET_ENDPOINT` and `API_KEY` to the distributed values, and change `USER_ID` to a personal value (e.g. student ID) so their rows can be told apart on the shared sheet.
+- **Host your own endpoint (self-study / advanced).** Follow the Apps Script setup below with your own Google account.
+
+```mermaid
+flowchart LR
+    Pico["Raspberry Pi Pico 2 W"]
+    GAS["Google Apps Script<br/>web app (doPost)"]
+    Sheet["Google Sheet"]
+
+    Pico -- "HTTPS POST (JSON)" --> GAS
+    GAS -- "appendRow" --> Sheet
+```
+
+**Set up the Apps Script side** (for the instructor, or for learners hosting their own endpoint):
+
+1. Create a new Google Sheet.
+2. Open `Extensions -> Apps Script`.
+3. Replace the default `myFunction` with:
+
+```javascript
+// Simple shared secret for authentication (must match the sensor side)
+const API_KEY = 'YOUR_API_KEY';
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+
+    if (data.apiKey !== API_KEY) {
+      return ContentService.createTextOutput(JSON.stringify({ ok: false, error: 'unauthorized' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('data');
+    if (!sheet) {
+      sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('data');
+      sheet.appendRow(['timestamp', 'temperature', 'humidity', 'pressure', 'userid']);
+    }
+
+    sheet.appendRow([
+      new Date(),
+      data.temperature,
+      data.humidity,
+      data.pressure,
+      data.userid || ''
+    ]);
+
+    return ContentService.createTextOutput(JSON.stringify({ ok: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+```
+
+Change `API_KEY` at the top to a long, hard-to-guess string of your own. It acts as a simple shared secret: requests whose `apiKey` does not match are rejected, so knowing the URL alone is not enough to write data. Distribute the key together with the web app URL.
+
+4. Save, then `Deploy -> New deployment -> Web app`.
+5. Set `Execute as: Me` and `Who has access: Anyone`, then deploy.
+6. Approve the one-time authorization prompt (it's your own script, so it is safe to proceed past the "unverified app" warning).
+7. Copy the deployment URL (it ends in `/exec`).
+
+Note: `Who has access: Anyone` means anyone can reach the URL. The `apiKey` check above prevents writes from someone who only knows the URL, but anyone who also has the key can write — treat it as a temporary classroom endpoint, and revoke the deployment afterward. Also remember that editing the script does not update the live URL until you deploy a **new version** (`Manage deployments -> edit -> New version`) or create a new deployment.
+
+**Pico 2 W sketch:** Apps Script web apps only serve HTTPS and reply with a `302` redirect to the actual execution URL, so use `HTTPClient` (which follows redirects) instead of a raw `WiFiClient` socket.
+
+```cpp
+#include <Wire.h>
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+#include <HTTPClient.h>
+#include <Adafruit_BMP280.h>
+#include <Adafruit_AHTX0.h>
+
+const char* SSID = "YOUR_SSID";
+const char* PASSWORD = "YOUR_PASSWORD";
+
+// URL distributed by the instructor, or your own Apps Script deployment URL (ends in /exec)
+const char* SHEET_ENDPOINT = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
+
+// API key distributed by the instructor (must match API_KEY in doPost if self-hosted)
+const char* API_KEY = "YOUR_API_KEY";
+
+// Always change this to a personal value (e.g. your student ID)
+const char* USER_ID = "user01";
+
+Adafruit_BMP280 bmp;
+Adafruit_AHTX0 aht;
+
+void connectWiFi() {
+  if (WiFi.status() == WL_CONNECTED) return;
+
+  Serial.print("Connecting to Wi-Fi");
+  WiFi.begin(SSID, PASSWORD);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println();
+  Serial.println("Wi-Fi connected");
+}
+
+bool sendToSheet(float temperature, float humidity, float pressure) {
+  WiFiClientSecure client;
+  client.setInsecure();   // classroom use: skip certificate validation
+
+  HTTPClient http;
+  http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);   // Apps Script replies with a 302
+
+  if (!http.begin(client, SHEET_ENDPOINT)) {
+    Serial.println("http.begin failed");
+    return false;
+  }
+
+  http.addHeader("Content-Type", "application/json");
+
+  String body = "{";
+  body += "\"apiKey\":\"" + String(API_KEY) + "\",";
+  body += "\"temperature\":" + String(temperature, 2) + ",";
+  body += "\"humidity\":" + String(humidity, 2) + ",";
+  body += "\"pressure\":" + String(pressure, 2) + ",";
+  body += "\"userid\":\"" + String(USER_ID) + "\"";
+  body += "}";
+
+  int status = http.POST(body);
+  Serial.print("HTTP status: ");
+  Serial.println(status);
+
+  String response = "";
+  if (status > 0) {
+    response = http.getString();
+    Serial.println(response);
+  }
+
+  http.end();
+
+  // Apps Script replies with HTTP 200 even when the API key is wrong,
+  // so success is determined by "ok":true in the response body.
+  return status == 200 && response.indexOf("\"ok\":true") >= 0;
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(2000);
+
+  Wire.setSDA(4);
+  Wire.setSCL(5);
+  Wire.begin();
+
+  if (!bmp.begin(0x77)) {
+    Serial.println("BMP280 not found");
+    while (1) { delay(100); }
+  }
+
+  if (!aht.begin()) {
+    Serial.println("AHT20 not found");
+    while (1) { delay(100); }
+  }
+
+  connectWiFi();
+}
+
+void loop() {
+  sensors_event_t humidityEvent, tempEvent;
+  aht.getEvent(&humidityEvent, &tempEvent);
+
+  float temperature = tempEvent.temperature;
+  float humidity = humidityEvent.relative_humidity;
+  float pressure = bmp.readPressure() / 100.0;
+
+  Serial.print("Temperature [C]: ");
+  Serial.println(temperature);
+  Serial.print("Humidity [%]: ");
+  Serial.println(humidity);
+  Serial.print("Pressure [hPa]: ");
+  Serial.println(pressure);
+
+  sendToSheet(temperature, humidity, pressure);
+  delay(10000);
+}
+```
+
+This project is also available at [../projects/pico2w-google-sheets-sender/README_en.md](../projects/pico2w-google-sheets-sender/README_en.md).
+
+Check the result in the serial monitor (`HTTP status: 200` followed by `{"ok":true}`), then open the Google Sheet and confirm it gains a new row (timestamp, temperature, humidity, pressure, userid) after each POST. On a shared classroom sheet, rows from everyone are interleaved — find yours by your `USER_ID`. Note that a wrong `API_KEY` still returns HTTP 200 but with `{"ok":false,"error":"unauthorized"}` and no new row.
+
 ---
 
 ## 12. Practice Tasks
@@ -933,6 +1127,7 @@ Confirm that the channel receives data and create charts for:
 4. Print the BMP280 and AHT20 values to the serial monitor.
 5. Connect to Wi-Fi and show the IP address.
 6. Send temperature, humidity, and pressure to Ambient.
+7. (When Ambient is unavailable) Send temperature, humidity, and pressure to a Google Sheet instead. If using the instructor's shared sheet, change `USER_ID` to a personal value and confirm your own rows appear on the sheet.
 
 ---
 
@@ -963,6 +1158,16 @@ Confirm that the channel receives data and create charts for:
 - are `CHANNEL_ID` and `WRITE_KEY` correct?
 - is the sending interval too short?
 - does the serial monitor show an HTTP response?
+- if Ambient itself is down or congested, switch to the Google Sheets fallback (Section 11.5)
+
+### Google Sheet does not receive data
+
+- is `Who has access` set to `Anyone` in the Apps Script deployment?
+- did you redeploy (new version or new deployment) after editing the script?
+- does `SHEET_ENDPOINT` end in `/exec` (no copy-paste errors in the distributed URL)?
+- are you using `WiFiClientSecure` + `HTTPClient` with `client.setInsecure()`?
+- does `API_KEY` match the distributed value? (a mismatch still returns HTTP 200, but with `{"ok":false,"error":"unauthorized"}` and nothing is written)
+- on a shared sheet, did you change `USER_ID` from the default, and is it unique among learners?
 
 ---
 
@@ -974,7 +1179,7 @@ In this lecture, learners:
 2. used GPIO with an LED and a tact switch
 3. read BMP280 and AHT20 over I2C
 4. connected Pico 2 W to Wi-Fi
-5. sent data to Ambient
+5. sent data to Ambient (or to a Google Sheet when Ambient was unavailable)
 
 ---
 
@@ -996,7 +1201,7 @@ Using the `BMP280 + AHT20` module, print the following to the serial monitor eve
 - AHT20 temperature
 - AHT20 humidity
 
-### Task C: Ambient Visualization
+### Task C: Network Sending and Visualization
 
 Send the following to Ambient:
 
@@ -1006,6 +1211,11 @@ Send the following to Ambient:
 
 At least one successful data record must be visible on Ambient.
 
+**If Ambient is down or congested, sending to a Google Sheet (Section 11.5) is an accepted alternative.** In that case:
+
+- `USER_ID` must be set to a personal value
+- the sheet must show at least one row with your `USER_ID`
+
 ### Submission Items
 
 Submit all of the following:
@@ -1013,7 +1223,9 @@ Submit all of the following:
 1. the full `.ino` file
 2. one photo of the wiring
 3. one screenshot of the serial monitor
-4. one screenshot of the Ambient channel showing received data
+4. one screenshot showing received data:
+   - with Ambient: the channel page showing your records
+   - with Google Sheets: the sheet showing rows with your `USER_ID`
 
 ### Pass Criteria
 
@@ -1022,7 +1234,7 @@ All of the following must be satisfied:
 - the code compiles
 - LED and tact switch behavior matches the instructions
 - the serial monitor shows all four sensor values
-- Ambient shows at least one received data record
+- Ambient or the Google Sheet shows at least one received data record
 
 ### Required Code Comment
 
