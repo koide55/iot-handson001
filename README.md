@@ -14,6 +14,7 @@ This directory contains Markdown-first lecture materials rebuilt from the origin
   - I2C sensor exercises
   - Wi-Fi connection
   - Ambient visualization
+  - Ambient fallback exercise (own POST endpoint via Google Apps Script + Google Sheets)
   - Cortex-M33 assembly slides
   - Cortex-M33 assembly minimal project
   - MTD local-POST exercise (local Python receiver + Pico sender)
@@ -52,3 +53,5 @@ This directory contains Markdown-first lecture materials rebuilt from the origin
 - [projects/local-python-receiver/README_en.md](projects/local-python-receiver/README_en.md)
 - [projects/pico2w-local-post-sender/README.md](projects/pico2w-local-post-sender/README.md)
 - [projects/pico2w-local-post-sender/README_en.md](projects/pico2w-local-post-sender/README_en.md)
+- [projects/pico2w-google-sheets-sender/README.md](projects/pico2w-google-sheets-sender/README.md)
+- [projects/pico2w-google-sheets-sender/README_en.md](projects/pico2w-google-sheets-sender/README_en.md)

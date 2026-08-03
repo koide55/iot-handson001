@@ -11,6 +11,7 @@
 | 穴埋め版 | 受講者が `TODO` を埋める演習用 | [pico2w-cortexm33-asm-worksheet](pico2w-cortexm33-asm-worksheet/README.md) |
 | 受信サーバ | IoT / MTD 演習で使う最小の Python 受信サーバ | [local-python-receiver](local-python-receiver/README.md) |
 | 送信スケッチ | IoT / MTD 演習で使う Pico 2 W 側の最小送信コード | [pico2w-local-post-sender](pico2w-local-post-sender/README.md) |
+| Ambient 代替送信 | Ambient が使えないときに Google スプレッドシートへ送る代替スケッチ | [pico2w-google-sheets-sender](pico2w-google-sheets-sender/README.md) |
 
 ## どれを使うか
 
@@ -38,6 +39,7 @@ Arduino IDE では、**フォルダ名と同じ `.ino` ファイル** を開い�
 - [../slides/README.md](../slides/README.md)
 - [local-python-receiver/README.md](local-python-receiver/README.md)
 - [pico2w-local-post-sender/README.md](pico2w-local-post-sender/README.md)
+- [pico2w-google-sheets-sender/README.md](pico2w-google-sheets-sender/README.md)
 
 ## English
 

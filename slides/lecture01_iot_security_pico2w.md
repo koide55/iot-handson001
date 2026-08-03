@@ -1207,6 +1207,276 @@ void loop() {
 - まず 1 台分の送信成功を前で見せたか
 - Ambient の一覧表示で受信確認してからグラフ化へ進めているか
 
+### 11.9 Ambient が使えないときの代替: 自前 POST 受け口（Google スプレッドシート）を使う
+
+#### 11.9.1 ねらい
+
+Ambient は無料の外部サービスなので、演習中にサービス障害や混雑でつながらないことがあります。ここでは、Ambient の代わりに、自分で用意した POST の受け口（Google Apps Script のウェブアプリ）を使って、Google スプレッドシートへ直接データを蓄積する方法を紹介します。
+
+考え方は Ambient のときと同じで、**Pico 2 W から JSON を HTTP(S) POST するだけ** です。送信先を Ambient から自前のウェブアプリに差し替えます。
+
+授業では、次の 2 通りの進め方ができます。
+
+- **講師が用意した共有シートを使う（授業での基本）**
+  - 講師が 1 つのスプレッドシートと受け口を用意し、URL を全員に配る
+  - 受講者は 11.9.2 と 11.9.3 を飛ばし、11.9.4 のスケッチの書き換えから始めてよい
+  - 全員が同じシートに書き込むので、**自分の行を見分けるために `USER_ID` を必ず自分専用の値に変更する**
+- **自分で受け口を用意する（自習、発展）**
+  - 自分の Google アカウントで 11.9.2 の手順から進める
+
+```mermaid
+flowchart LR
+    Pico["Raspberry Pi Pico 2 W"]
+    GAS["Google Apps Script<br/>ウェブアプリ (doPost)"]
+    Sheet["Google スプレッドシート"]
+
+    Pico -- "HTTPS POST (JSON)" --> GAS
+    GAS -- "appendRow" --> Sheet
+```
+
+#### 11.9.2 Google スプレッドシート側の準備
+
+ここは **受け口を用意する人（講師、または自習で自分の受け口を作る人）** の手順です。講師が配った URL を使う受講者は、11.9.4 へ進んでください。
+
+1. Google スプレッドシートを新規作成する（ファイル名は任意、例: `pico2w-sensor-log`）
+2. メニューから `拡張機能 -> Apps Script` を開く
+3. 開いたエディタで、デフォルトの `myFunction` を消し、次のコードに置き換える
+
+```javascript
+// 簡易的な認証用の秘密鍵（センサー側と一致させる）
+const API_KEY = 'YOUR_API_KEY';
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+
+    if (data.apiKey !== API_KEY) {
+      return ContentService.createTextOutput(JSON.stringify({ ok: false, error: 'unauthorized' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('data');
+    if (!sheet) {
+      sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('data');
+      sheet.appendRow(['timestamp', 'temperature', 'humidity', 'pressure', 'userid']);
+    }
+
+    sheet.appendRow([
+      new Date(),
+      data.temperature,
+      data.humidity,
+      data.pressure,
+      data.userid || ''
+    ]);
+
+    return ContentService.createTextOutput(JSON.stringify({ ok: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+```
+
+複数人で 1 つのシートを共有する授業運用を想定して、`userid` 列で送信元を見分けられるようにしています。また、URL を知っているだけでは書き込めないように、`apiKey` による簡易認証を入れています。コード先頭の `API_KEY` は、自分で決めた推測されにくい長い文字列に書き換えてください（受講者にはウェブアプリの URL と一緒に配ります）。
+
+4. 保存する（フロッピーアイコン、または `Ctrl+S` / `Cmd+S`）
+5. 右上の `デプロイ -> 新しいデプロイ` を選ぶ
+6. 種類の選択で歯車アイコンから `ウェブアプリ` を選ぶ
+7. 次の設定にする
+   - 次のユーザーとして実行: `自分`
+   - アクセスできるユーザー: `全員`
+8. `デプロイ` をクリックする
+9. 初回は Google アカウントでの承認画面が出る。自分が書いたスクリプトなので、`詳細` を開き、`(プロジェクト名)に移動（安全ではないページ）` を選んで進めてよい
+10. スプレッドシートへの読み書き権限を確認し、許可する
+11. 発行された URL（`.../exec` で終わる）をコピーする
+
+> 注記  
+> `アクセスできるユーザー: 全員` にすると、この URL へ誰でもアクセスできる状態になります。上記の `doPost` には `apiKey` による簡易認証を入れてあるため、URL だけを知っていても書き込めませんが、キーが漏れれば書き込めてしまいます。演習用の一時的な受け口として割り切り、演習後にはデプロイを取り消すか、URL とキーを使い回さないようにしてください。
+
+#### 11.9.3 コード変更時の注意
+
+Apps Script のコードを直したときは、保存しただけでは公開済みの URL には反映されません。次のどちらかが必要です。
+
+- `デプロイ -> デプロイを管理` から既存のデプロイを選び、バージョンを `新バージョン` にして `デプロイ` し直す
+- `デプロイ -> 新しいデプロイ` で新しい URL を発行し、スケッチ側の URL も書き換える
+
+#### 11.9.4 Pico 2 W 側のスケッチ
+
+講師が用意した共有シートを使う場合は、ここからが受講者の作業です。書き換えるのは次の 4 か所だけです。
+
+- `SSID` と `PASSWORD`: 自分の Wi-Fi
+- `SHEET_ENDPOINT`: 講師から配られた URL（自分で用意した場合は自分の `.../exec` URL）
+- `API_KEY`: 講師から配られた API キー（自分で用意した場合は `doPost` 側の `API_KEY` と同じ値）
+- `USER_ID`: **自分専用の名前**（例: 学籍番号、`pico2w-yamada` など）。共有シートでは全員の行が混ざるので、この値で自分の行を見分けます
+
+Google Apps Script のウェブアプリは HTTPS でしか応答しません。また `.../exec` へのアクセスは内部的に `script.googleusercontent.com` へ 302 リダイレクトされるため、Ambient のときのような生のソケット送信ではなく、リダイレクトを自動で追える `HTTPClient` を使います。
+
+```cpp
+#include <Wire.h>
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+#include <HTTPClient.h>
+#include <Adafruit_BMP280.h>
+#include <Adafruit_AHTX0.h>
+
+const char* SSID = "YOUR_SSID";
+const char* PASSWORD = "YOUR_PASSWORD";
+
+// 講師から配られた URL、または Apps Script のデプロイで発行された URL（/exec で終わる）
+const char* SHEET_ENDPOINT = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
+
+// 講師から配られた API キー（自分で受け口を作った場合は doPost 側の API_KEY と一致させる）
+const char* API_KEY = "YOUR_API_KEY";
+
+// 自分専用の名前に必ず変更する（例: 学籍番号）
+const char* USER_ID = "user01";
+
+Adafruit_BMP280 bmp;
+Adafruit_AHTX0 aht;
+
+void connectWiFi() {
+  if (WiFi.status() == WL_CONNECTED) {
+    return;
+  }
+
+  Serial.print("Connecting to Wi-Fi");
+  WiFi.begin(SSID, PASSWORD);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println();
+  Serial.println("Wi-Fi connected");
+}
+
+bool sendToSheet(float temperature, float humidity, float pressure) {
+  WiFiClientSecure client;
+  client.setInsecure();   // 演習用。証明書検証を省略する
+
+  HTTPClient http;
+  http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);   // Apps Script は 302 で実体 URL に転送される
+
+  if (!http.begin(client, SHEET_ENDPOINT)) {
+    Serial.println("http.begin failed");
+    return false;
+  }
+
+  http.addHeader("Content-Type", "application/json");
+
+  String body = "{";
+  body += "\"apiKey\":\"" + String(API_KEY) + "\",";
+  body += "\"temperature\":" + String(temperature, 2) + ",";
+  body += "\"humidity\":" + String(humidity, 2) + ",";
+  body += "\"pressure\":" + String(pressure, 2) + ",";
+  body += "\"userid\":\"" + String(USER_ID) + "\"";
+  body += "}";
+
+  int status = http.POST(body);
+
+  Serial.print("HTTP status: ");
+  Serial.println(status);
+
+  String response = "";
+  if (status > 0) {
+    response = http.getString();
+    Serial.println(response);
+  }
+
+  http.end();
+
+  // Apps Script は API キーが間違っていても HTTP 200 を返すので、
+  // 成否は応答本文の "ok":true で判定する
+  return status == 200 && response.indexOf("\"ok\":true") >= 0;
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(2000);
+
+  Wire.setSDA(4);
+  Wire.setSCL(5);
+  Wire.begin();
+
+  if (!bmp.begin(0x77)) {
+    Serial.println("BMP280 not found");
+    while (1) {
+      delay(100);
+    }
+  }
+
+  if (!aht.begin()) {
+    Serial.println("AHT20 not found");
+    while (1) {
+      delay(100);
+    }
+  }
+
+  connectWiFi();
+}
+
+void loop() {
+  sensors_event_t humidityEvent, tempEvent;
+  aht.getEvent(&humidityEvent, &tempEvent);
+
+  float temperature = tempEvent.temperature;
+  float humidity = humidityEvent.relative_humidity;
+  float pressure = bmp.readPressure() / 100.0;
+
+  Serial.print("Temperature [C]: ");
+  Serial.println(temperature);
+  Serial.print("Humidity [%]: ");
+  Serial.println(humidity);
+  Serial.print("Pressure [hPa]: ");
+  Serial.println(pressure);
+
+  sendToSheet(temperature, humidity, pressure);
+
+  // Apps Script 側の実行時間制限もあるので、Ambient と同様に
+  // 送信間隔は 10 秒以上あけておくと扱いやすいです。
+  delay(10000);
+}
+```
+
+このプロジェクトは [../projects/pico2w-google-sheets-sender/README.md](../projects/pico2w-google-sheets-sender/README.md) にもまとめてあります。
+
+#### 11.9.5 動作確認
+
+1. スケッチの `SSID`、`PASSWORD`、`SHEET_ENDPOINT`、`API_KEY`、`USER_ID` を自分の環境に合わせて書き換える
+2. 書き込み後、シリアルモニタで `HTTP status: 200` と応答本文 `{"ok":true}` が出ることを確認する
+3. Google スプレッドシートを開き、**自分の `USER_ID` の行** が追加されていくことを確認する（共有シートの場合、他の受講者の行と混ざって表示されます）
+
+#### 11.9.6 所要時間の目安
+
+- 講師が用意した共有シートを使う場合: 10 分から 15 分
+- 自分で受け口を用意する場合: 20 分から 30 分
+
+#### 11.9.7 期待される結果
+
+- シリアルモニタに `HTTP status: 200` と `{"ok":true}` が表示される
+- スプレッドシートに、タイムスタンプ、温度、湿度、気圧、`userid` の行が追加され続ける
+- 共有シートの場合、自分の `USER_ID` でフィルタすると自分のデータだけを追える
+
+#### 11.9.8 よくある失敗
+
+- `USER_ID` を書き換え忘れて、共有シート上で誰の行か区別できなくなる（初期値 `user01` のままの受講者が複数いると混ざる）
+- `API_KEY` の貼り間違いで `{"ok":false,"error":"unauthorized"}` が返る（このとき **HTTP status は 200 のまま** なので、応答本文まで確認する）
+- `アクセスできるユーザー` を `自分のみ` のままにしてしまい、Pico からのアクセスが 403 になる
+- コードを直したのに `新しいデプロイ` または `新バージョン` のデプロイをせず、古い動作のままになる
+- `SHEET_ENDPOINT` に `/exec` を含めていない、または末尾に余計な文字が入っている（配られた URL のコピペミスを含む）
+- `WiFiClientSecure` を使わず `WiFiClient`（HTTP用）のまま接続しようとして失敗する
+- `client.setInsecure()` を忘れて証明書エラーになる
+
+#### 11.9.9 講師チェックポイント
+
+- （共有シート運用）演習前にシートと受け口をデプロイし、URL と API キーの配布方法を決めてあるか
+- （共有シート運用）全員が `USER_ID` を自分専用の値に変更したことを確認したか
+- 発行した exec URL を正しくスケッチに貼り替えたか
+- スプレッドシート側に実際に行が増えていく様子を全員に見せたか
+- 「アクセスできるユーザー: 全員」にした場合の情報セキュリティ上の注意点を説明したか
+
 ---
 
 ## 12. 演習課題
@@ -1234,6 +1504,10 @@ Wi-Fi に接続し、IP アドレスを表示してください。
 ### 演習 6
 
 Ambient に温度、湿度、気圧を送信し、チャートで確認してください。
+
+### 演習 7（Ambient が使えないとき）
+
+Ambient の代わりに、Google Apps Script ウェブアプリを使って、温度、湿度、気圧を Google スプレッドシートに送信してください。講師が用意した共有シートの URL を使う場合は、`USER_ID` を自分専用の値に変更し、シート上で自分の行が増えていくことを確認できれば成功です。
 
 ---
 
@@ -1264,6 +1538,16 @@ Ambient に温度、湿度、気圧を送信し、チャートで確認してく
 - `CHANNEL_ID` と `WRITE_KEY` が正しいか
 - 送信間隔が短すぎないか
 - シリアルモニタに HTTP 応答が出ているか
+- Ambient 自体がサービス障害や混雑で不安定なときは、「11.9 Ambient が使えないときの代替」の Google スプレッドシート経由の代替手段に切り替える
+
+### Google スプレッドシートに出ない
+
+- Apps Script のデプロイ設定で `アクセスできるユーザー` が `全員` になっているか
+- コード変更後に `新しいデプロイ` または `新バージョン` でデプロイし直したか
+- スケッチの `SHEET_ENDPOINT` が `.../exec` で終わっているか（講師から配られた URL のコピペミスがないか）
+- `WiFiClientSecure` と `HTTPClient` を使い、`client.setInsecure()` を呼んでいるか
+- `API_KEY` が配られた値と一致しているか（不一致だと HTTP 200 でも `{"ok":false,"error":"unauthorized"}` が返り、シートには書き込まれない）
+- 共有シートで自分の行が見つからないときは、`USER_ID` を書き換えたか、他の受講者と同じ値になっていないか
 
 ---
 
@@ -1275,7 +1559,7 @@ Ambient に温度、湿度、気圧を送信し、チャートで確認してく
 2. GPIO で LED とタクトスイッチを扱う
 3. I2C で BMP280 と AHT20 を読む
 4. Wi-Fi に接続する
-5. Ambient に送信して可視化する
+5. Ambient に送信して可視化する（Ambient が使えないときは Google スプレッドシートへ送信する）
 
 ここまでできれば、IoT 端末の基本形は作れています。次に機能を増やすとしたら、次の方向が自然です。
 
@@ -1306,7 +1590,7 @@ Ambient に温度、湿度、気圧を送信し、チャートで確認してく
 - AHT20 の温度
 - AHT20 の湿度
 
-### 課題 C: Ambient 可視化
+### 課題 C: ネットワーク送信と可視化
 
 Ambient に次の 3 項目を送信してください。
 
@@ -1316,6 +1600,11 @@ Ambient に次の 3 項目を送信してください。
 
 Ambient 上で少なくとも 1 回以上データ受信が確認できることを条件とします。
 
+**Ambient がサービス障害や混雑で使えない場合は、代替経路として Google スプレッドシート（11.9 参照）への送信で構いません。** その場合は次を条件とします。
+
+- `USER_ID` を自分専用の値に設定している
+- スプレッドシートに、自分の `USER_ID` の行が少なくとも 1 行以上記録されている
+
 ### 提出物
 
 提出時には次の 4 点をそろえてください。
@@ -1323,7 +1612,9 @@ Ambient 上で少なくとも 1 回以上データ受信が確認できること
 1. 提出対象の `.ino` ファイル全文
 2. 配線が分かる写真 1 枚
 3. シリアルモニタの表示が分かるスクリーンショット 1 枚
-4. Ambient のチャネル画面でデータが記録されていることが分かるスクリーンショット 1 枚
+4. データ受信が確認できるスクリーンショット 1 枚
+   - Ambient を使った場合: チャネル画面でデータが記録されていることが分かるもの
+   - Google スプレッドシートを使った場合: 自分の `USER_ID` の行が記録されていることが分かるもの
 
 ### 合格条件
 
@@ -1332,7 +1623,7 @@ Ambient 上で少なくとも 1 回以上データ受信が確認できること
 - ソースコードがコンパイル可能である
 - LED とタクトスイッチの動作が説明文通りである
 - シリアルモニタに 4 項目の値が表示されている
-- Ambient に少なくとも 1 回以上データが送信されている
+- Ambient または Google スプレッドシートに少なくとも 1 回以上データが送信されている
 
 ### 提出時にコードへ必ず書くコメント
 
@@ -1340,4 +1631,4 @@ Ambient 上で少なくとも 1 回以上データ受信が確認できること
 
 - 使用した Wi-Fi 以外のハード構成
 - BMP280 の I2C アドレス
-- 温度として BMP280 と AHT20 のどちらを `d1` に送ったか
+- 温度として BMP280 と AHT20 のどちらを `d1`（Google スプレッドシートの場合は `temperature`）に送ったか
